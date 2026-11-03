@@ -1,0 +1,6 @@
+{
+  "name": "mille-miglia",
+  "private": true,
+  "scripts": { "test": "node --test test/*.test.js" },
+  "dependencies": { "firebase-admin": "^12.7.0" }
+}

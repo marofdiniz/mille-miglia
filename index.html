@@ -1,0 +1,2664 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mille Miglia - Gestão de Imóveis</title>
+<!-- Favicon (aba do navegador) -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='b' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%231a4d3a'/%3E%3Cstop offset='100%25' stop-color='%232e6b52'/%3E%3C/linearGradient%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23d4af37'/%3E%3Cstop offset='100%25' stop-color='%23b8941f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' fill='url(%23b)'/%3E%3Ctext x='256' y='340' font-family='Georgia,serif' font-size='280' font-weight='700' text-anchor='middle' fill='url(%23g)' letter-spacing='-15'%3EMM%3C/text%3E%3C/svg%3E" />
+<!-- Apple Touch Icon (iPhone home screen) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='b' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%231a4d3a'/%3E%3Cstop offset='100%25' stop-color='%232e6b52'/%3E%3C/linearGradient%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23d4af37'/%3E%3Cstop offset='100%25' stop-color='%23b8941f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' fill='url(%23b)'/%3E%3Ctext x='256' y='340' font-family='Georgia,serif' font-size='280' font-weight='700' text-anchor='middle' fill='url(%23g)' letter-spacing='-15'%3EMM%3C/text%3E%3C/svg%3E" />
+<!-- Configuração de App PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mille Miglia">
+<meta name="theme-color" content="#1a4d3a">
+<link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Mille%20Miglia%22%2C%22short_name%22%3A%22Mille%20Miglia%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f5f1e8%22%2C%22theme_color%22%3A%22%231a4d3a%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImIiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxYTRkM2EiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyZTZiNTIiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2Q0YWYzNyIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2I4OTQxZiIvPjwvbGluZWFyR3JhZGllbnQ%2BPC9kZWZzPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiBmaWxsPSJ1cmwoI2IpIi8%2BPHRleHQgeD0iMjU2IiB5PSIzNDAiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjI4MCIgZm9udC13ZWlnaHQ9IjcwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0idXJsKCNnKSIgbGV0dGVyLXNwYWNpbmc9Ii0xNSI%2BTU08L3RleHQ%2BPC9zdmc%2B%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body { font-family: 'Manrope', sans-serif; margin: 0; background: linear-gradient(135deg, #f5f1e8 0%, #ede4d3 100%); min-height: 100vh; }
+.titulo-serif { font-family: 'Cormorant Garamond', Georgia, serif; }
+.num-mono { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.card { background: #fdfbf6; border: 1px solid #e8dfc9; box-shadow: 0 1px 3px rgba(73, 53, 17, 0.06), 0 4px 12px rgba(73, 53, 17, 0.04); }
+.accent { color: #1a4d3a; }
+.accent-bg { background: #1a4d3a; }
+.accent-gold { color: #c19a4a; }
+.border-accent { border-color: #1a4d3a; }
+.hover-lift { transition: all 0.2s ease; }
+.hover-lift:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(73, 53, 17, 0.12); }
+.pill { display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+.badge-vencido { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.badge-urgente { background: #fed7aa; color: #9a3412; border: 1px solid #fdba74; }
+.badge-proximo { background: #fef3c7; color: #854d0e; border: 1px solid #fde68a; }
+.badge-tranquilo { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+.badge-pago { background: #d1fae5; color: #065f46; }
+.modal-overlay { background: rgba(33, 24, 8, 0.55); backdrop-filter: blur(4px); }
+.input { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #d4c5a0; border-radius: 6px; font-size: 0.875rem; background: #fdfbf6; font-family: 'Manrope', sans-serif; box-sizing: border-box; }
+.input:focus { outline: 2px solid #1a4d3a; outline-offset: -1px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 1s linear infinite; }
+.icon { display: inline-block; vertical-align: middle; }
+@media print {
+  header nav, button, .modal-overlay { display: none !important; }
+  body { background: white !important; }
+  .card { box-shadow: none !important; border: 1px solid #ddd !important; page-break-inside: avoid; }
+  main { padding: 0 !important; }
+}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script type="module">
+// === FIREBASE ===
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject, listAll } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-storage.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD9AVrgEJ23nEmZIFyyHin-Qcu_o2aytGM",
+  authDomain: "mille-miglia-32367.firebaseapp.com",
+  projectId: "mille-miglia-32367",
+  storageBucket: "mille-miglia-32367.firebasestorage.app",
+  messagingSenderId: "306449534436",
+  appId: "1:306449534436:web:8f4a86ee41e14a0068cbf1"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+
+window.firebaseDB = { db, collection, getDocs, addDoc, updateDoc, deleteDoc, doc };
+const storage = getStorage(fbApp);
+window.firebaseStorage = { storage, ref, uploadBytes, getDownloadURL, deleteObject, listAll };
+const auth = getAuth(fbApp);
+window.firebaseAuth = { auth, signInWithEmailAndPassword, signOut, sendPasswordResetEmail };
+window.firebaseReady = true;
+onAuthStateChanged(auth, (u) => {
+  window.usuario = u;
+  window.authPronto = true;
+  window.dispatchEvent(new Event('auth-changed'));
+});
+</script>
+
+<script>
+// === ESTADO GLOBAL ===
+const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+const HOJE = new Date();
+const formatBRL = (v) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v || 0);
+
+const state = {
+  aba: 'dashboard',
+  imoveis: [],
+  receitas: [],
+  despesas: [],
+  carregando: true,
+  erro: null,
+  modalImovel: null,
+  modalDespesa: null,
+  modalReceita: null,
+  modalDetalheImovel: null,
+  modalAnexos: null, // { tipo: 'despesa'|'receita', id: '...', nome: '...' }
+  modalDocumentos: null, // { imovelId, imovelNome, categoriaAtiva }
+  modalGerarRecorrentes: null, // pra mostrar modal de seleção de mês/ano final
+  notifAtiva: false,
+  // Filtros para Receitas e Despesas
+  filtroImovelLanc: 'todos',
+  filtroMesLanc: 'todos',
+  filtroAnoLanc: 'todos',
+  filtroPeriodoRapido: 'tudo',
+  filtroDataInicio: '',
+  filtroDataFim: '',
+  // Cache de anexos por item: { 'despesa_<id>': [{nome, url, fullPath, tamanho}], ... }
+  anexosCache: {},
+  // Contagem de anexos: { 'despesa_<id>': 2, ... }
+  anexosCount: {},
+  uploadProgresso: false,
+  modalExtrato: null, // { arquivo, linhas, erro, salvando }
+};
+
+// === ÍCONES SVG ===
+const icons = {
+  building: '<svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>',
+  home: '<svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+  trending: '<svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
+  file: '<svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>',
+  dollar: '<svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+  calendar: '<svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  bar: '<svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>',
+  alert: '<svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+  plus: '<svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  edit: '<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>',
+  trash: '<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  x: '<svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  check: '<svg class="icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  bell: '<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+  download: '<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+  loader: '<svg class="icon spin" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>',
+};
+
+// === FIREBASE OPS ===
+async function carregarDados() {
+  state.carregando = true;
+  state.erro = null;
+  render();
+  try {
+    const fb = window.firebaseDB;
+    const [imSnap, recSnap, despSnap] = await Promise.all([
+      fb.getDocs(fb.collection(fb.db, "imoveis")),
+      fb.getDocs(fb.collection(fb.db, "receitas")),
+      fb.getDocs(fb.collection(fb.db, "despesas")),
+    ]);
+    state.imoveis = imSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    state.receitas = recSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.ano - a.ano) || (b.mes - a.mes));
+    state.despesas = despSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.ano - a.ano) || (b.mes - a.mes));
+  } catch (e) {
+    console.error(e);
+    state.erro = e.message;
+  } finally {
+    state.carregando = false;
+    render();
+    // Carrega contagens de anexos em background (não trava a UI)
+    carregarContagemAnexos();
+    carregarContagemDocumentos();
+  }
+}
+
+async function salvarImovel(im) {
+  try {
+    const fb = window.firebaseDB;
+    const dados = {
+      nome: im.nome, endereco: im.endereco || "", tipo: im.tipo, inquilino: im.inquilino || "",
+      aluguel: Number(im.aluguel) || 0, condominio: Number(im.condominio) || 0,
+      condominio_pago_por: im.condominio_pago_por, iptu: Number(im.iptu) || 0,
+      iptu_pago_por: im.iptu_pago_por, taxa_adm: Number(im.taxa_adm) || 0,
+      dia_vencimento: Number(im.dia_vencimento) || 1, status: im.status, obs: im.obs || "",
+    };
+    if (im.id) await fb.updateDoc(fb.doc(fb.db, "imoveis", im.id), dados);
+    else await fb.addDoc(fb.collection(fb.db, "imoveis"), dados);
+    state.modalImovel = null;
+    await carregarDados();
+  } catch (e) { alert("Erro ao salvar: " + e.message); }
+}
+
+async function removerImovel(id) {
+  if (!confirm("Remover este imóvel?")) return;
+  try {
+    const fb = window.firebaseDB;
+    await fb.deleteDoc(fb.doc(fb.db, "imoveis", id));
+    await carregarDados();
+  } catch (e) { alert("Erro: " + e.message); }
+}
+
+async function salvarDespesa(d) {
+  try {
+    const fb = window.firebaseDB;
+    const dados = {
+      imovel: d.imovel, tipo: d.tipo, mes: Number(d.mes), ano: Number(d.ano),
+      dia_venc: Number(d.dia_venc), valor: Number(d.valor), status: d.status,
+      pago_por: d.pago_por || 'proprietario',
+      recorrente: !!d.recorrente,
+      confirmar_valor: !!d.confirmar_valor,
+    };
+    let novoId = d.id;
+    let ehNova = false;
+    if (d.id) {
+      await fb.updateDoc(fb.doc(fb.db, "despesas", d.id), dados);
+    } else {
+      const docRef = await fb.addDoc(fb.collection(fb.db, "despesas"), dados);
+      novoId = docRef.id;
+      ehNova = true;
+    }
+    state.modalDespesa = null;
+    await carregarDados();
+    // Se for despesa nova, oferecer anexar
+    if (ehNova) {
+      const querAnexar = confirm(`✅ Despesa criada!\n\nQuer anexar o boleto/comprovante agora?\n\nSe clicar em OK, vai abrir a tela de anexos. Se cancelar, você pode anexar depois pelo botão 📎 nas listas.`);
+      if (querAnexar) {
+        state.modalAnexos = { tipo: 'despesa', id: novoId, nome: `${dados.tipo} - ${dados.imovel}` };
+        render();
+        await listarAnexos('despesa', novoId);
+        render();
+      }
+    }
+  } catch (e) { alert("Erro: " + e.message); }
+}
+
+async function removerDespesa(id) {
+  if (!confirm("Remover esta despesa?")) return;
+  try {
+    const fb = window.firebaseDB;
+    await fb.deleteDoc(fb.doc(fb.db, "despesas", id));
+    await carregarDados();
+  } catch (e) { alert("Erro: " + e.message); }
+}
+
+// Gera despesas recorrentes para o mês/ano alvo (se ainda não existirem)
+// Detecta automaticamente despesas que se repetem (mesmo imóvel+tipo em vários meses) e oferece marcar como recorrentes
+async function marcarRecorrentesEmMassa() {
+  const fb = window.firebaseDB;
+
+  // Agrupar despesas por imóvel+tipo
+  const grupos = {};
+  for (const d of state.despesas) {
+    const key = `${d.imovel}||${d.tipo}`;
+    if (!grupos[key]) grupos[key] = [];
+    grupos[key].push(d);
+  }
+
+  // Detectar despesas que se repetem em pelo menos 2 meses diferentes
+  const candidatas = [];
+  for (const [key, lista] of Object.entries(grupos)) {
+    if (lista.length < 2) continue;
+    // Verificar se há despesas em pelo menos 2 meses diferentes
+    const mesesUnicos = new Set(lista.map(d => `${d.ano}-${d.mes}`));
+    if (mesesUnicos.size < 2) continue;
+    // Pega a mais recente como referência
+    const maisRecente = lista.reduce((a, b) =>
+      (b.ano > a.ano || (b.ano === a.ano && b.mes > a.mes)) ? b : a
+    );
+    // Só inclui se a mais recente NÃO está marcada como recorrente ainda
+    if (!maisRecente.recorrente) {
+      candidatas.push({ key, despesa: maisRecente, qtd: lista.length });
+    }
+  }
+
+  if (candidatas.length === 0) {
+    alert("✅ Tudo certo!\n\nNão encontrei despesas repetidas que precisam ser marcadas como recorrentes. Todas as despesas que se repetem já estão marcadas, ou só aparecem uma vez.");
+    return;
+  }
+
+  // Mostrar lista pro usuário e pedir confirmação
+  const lista = candidatas.map(c => `• ${c.despesa.tipo} - ${c.despesa.imovel} (aparece em ${c.qtd} meses)`).join('\n');
+  const confirmar = confirm(`Detectei ${candidatas.length} despesa(s) que aparece(m) em vários meses mas não está(ão) marcada(s) como recorrente(s):\n\n${lista}\n\nPosso marcar todas como recorrentes?\n\nIsso permite usar "🔄 Gerar meses" pra criar essas despesas automaticamente nos próximos meses.`);
+
+  if (!confirmar) return;
+
+  // Marcar todas
+  try {
+    let marcadas = 0;
+    for (const c of candidatas) {
+      await fb.updateDoc(fb.doc(fb.db, "despesas", c.despesa.id), { recorrente: true });
+      marcadas++;
+    }
+    await carregarDados();
+    alert(`✅ ${marcadas} despesa(s) marcada(s) como recorrente(s)!\n\nAgora você pode usar o botão "🔄 Gerar meses" pra criar essas despesas nos próximos meses automaticamente.`);
+  } catch (e) {
+    alert("Erro ao marcar despesas: " + e.message);
+  }
+}
+window.marcarRecorrentesEmMassa = marcarRecorrentesEmMassa;
+
+async function gerarRecorrentes(mesInicio, anoInicio, mesFim, anoFim) {
+  try {
+    const fb = window.firebaseDB;
+    // Pega todas as despesas marcadas como recorrentes (a "mãe" só uma vez por imóvel+tipo)
+    const recorrentes = state.despesas.filter(d => d.recorrente);
+    if (recorrentes.length === 0) {
+      alert("Nenhuma despesa recorrente cadastrada.\n\nPra usar essa função, edite uma despesa e marque o checkbox '🔄 Despesa recorrente (todo mês)'.");
+      return;
+    }
+
+    // Resumir por imóvel+tipo, pegando o lançamento MAIS RECENTE como base
+    const baseUnica = {};
+    for (const r of recorrentes) {
+      const key = `${r.imovel}||${r.tipo}`;
+      const existente = baseUnica[key];
+      if (!existente || (r.ano > existente.ano) || (r.ano === existente.ano && r.mes > existente.mes)) {
+        baseUnica[key] = r;
+      }
+    }
+    const basesPraGerar = Object.values(baseUnica);
+
+    // Iterar de mesInicio/anoInicio até mesFim/anoFim
+    let criadas = 0, ignoradas = 0;
+    const detalhes = []; // pra log
+
+    let mesAtual = mesInicio, anoAtual = anoInicio;
+    while ((anoAtual < anoFim) || (anoAtual === anoFim && mesAtual <= mesFim)) {
+      for (const r of basesPraGerar) {
+        // Pula se essa é a própria base (mesmo mes/ano) — não duplica
+        if (r.mes === mesAtual && r.ano === anoAtual) continue;
+
+        const jaExiste = state.despesas.some(d =>
+          d.imovel === r.imovel && d.tipo === r.tipo &&
+          d.mes === mesAtual && d.ano === anoAtual
+        );
+        if (jaExiste) { ignoradas++; continue; }
+
+        const novaDespesa = {
+          imovel: r.imovel, tipo: r.tipo,
+          mes: mesAtual, ano: anoAtual,
+          dia_venc: r.dia_venc,
+          valor: r.valor,
+          status: 'pendente',
+          pago_por: r.pago_por || 'proprietario',
+          recorrente: false,
+          confirmar_valor: true,
+        };
+        await fb.addDoc(fb.collection(fb.db, "despesas"), novaDespesa);
+        criadas++;
+        detalhes.push(`${MESES[mesAtual-1]}/${anoAtual}: ${r.tipo} (${r.imovel})`);
+      }
+      // Avança 1 mês
+      mesAtual++;
+      if (mesAtual > 12) { mesAtual = 1; anoAtual++; }
+    }
+
+    await carregarDados();
+    state.modalGerarRecorrentes = null;
+    render();
+
+    const resumoTipos = basesPraGerar.map(r => `• ${r.tipo} - ${r.imovel}`).join('\n');
+    alert(`✅ Geração concluída!\n\n${criadas} despesa(s) criada(s)${ignoradas > 0 ? '\n' + ignoradas + ' já existiam (foram ignoradas)' : ''}\n\nDespesas recorrentes geradas:\n${resumoTipos}\n\n⚠️ Confira os valores nos próximos meses e ajuste se necessário (badge "Confirmar valor").`);
+  } catch (e) { alert("Erro: " + e.message); console.error(e); }
+}
+
+async function marcarPaga(id, statusAtual) {
+  try {
+    const fb = window.firebaseDB;
+    const novoStatus = statusAtual === "pago" ? "pendente" : "pago";
+    await fb.updateDoc(fb.doc(fb.db, "despesas", id), { status: novoStatus });
+    await carregarDados();
+  } catch (e) { alert("Erro: " + e.message); }
+}
+
+async function salvarReceita(r) {
+  try {
+    const fb = window.firebaseDB;
+    const dados = { imovel: r.imovel, mes: Number(r.mes), ano: Number(r.ano), valor: Number(r.valor) };
+    let novoId = r.id;
+    let ehNova = false;
+    if (r.id) {
+      await fb.updateDoc(fb.doc(fb.db, "receitas", r.id), dados);
+    } else {
+      const docRef = await fb.addDoc(fb.collection(fb.db, "receitas"), dados);
+      novoId = docRef.id;
+      ehNova = true;
+    }
+    state.modalReceita = null;
+    await carregarDados();
+    if (ehNova) {
+      const querAnexar = confirm(`✅ Receita registrada!\n\nQuer anexar o comprovante agora?`);
+      if (querAnexar) {
+        state.modalAnexos = { tipo: 'receita', id: novoId, nome: `Receita ${dados.imovel} ${MESES[dados.mes-1]}/${dados.ano}` };
+        render();
+        await listarAnexos('receita', novoId);
+        render();
+      }
+    }
+  } catch (e) { alert("Erro: " + e.message); }
+}
+
+async function removerReceita(id) {
+  if (!confirm("Remover esta receita?")) return;
+  try {
+    const fb = window.firebaseDB;
+    await fb.deleteDoc(fb.doc(fb.db, "receitas", id));
+    await carregarDados();
+  } catch (e) { alert("Erro: " + e.message); }
+}
+
+// === STORAGE: ANEXOS ===
+// Total de documentos de um imóvel (soma de todas as categorias)
+function totalDocsImovel(imovelId) {
+  let total = 0;
+  for (const cat of CATEGORIAS_DOC) {
+    total += state.anexosCount[`doc_${imovelId}_${cat.id}`] || 0;
+  }
+  return total;
+}
+
+const STORAGE_PASTA = "millemiglia"; // pasta raiz no Storage
+
+// Categorias de documentos por imóvel
+const CATEGORIAS_DOC = [
+  { id: 'matricula', nome: 'Matrícula', icone: '📄' },
+  { id: 'iptu', nome: 'IPTU', icone: '🏛️' },
+  { id: 'contrato', nome: 'Contrato de Aluguel', icone: '📝' },
+  { id: 'escritura', nome: 'Escritura', icone: '🏠' },
+  { id: 'outros', nome: 'Outros', icone: '📁' },
+];
+
+// Listar anexos de um item (despesa ou receita)
+async function listarAnexos(tipo, id) {
+  try {
+    const st = window.firebaseStorage;
+    const folderRef = st.ref(st.storage, `${STORAGE_PASTA}/${tipo}_${id}`);
+    const result = await st.listAll(folderRef);
+    const anexos = await Promise.all(
+      result.items.map(async (itemRef) => {
+        const url = await st.getDownloadURL(itemRef);
+        return { nome: itemRef.name, url, fullPath: itemRef.fullPath };
+      })
+    );
+    state.anexosCache[`${tipo}_${id}`] = anexos;
+    state.anexosCount[`${tipo}_${id}`] = anexos.length;
+    return anexos;
+  } catch (e) {
+    console.error("Erro ao listar anexos:", e);
+    state.anexosCache[`${tipo}_${id}`] = [];
+    state.anexosCount[`${tipo}_${id}`] = 0;
+    return [];
+  }
+}
+
+// Upload de arquivo
+async function uploadAnexo(tipo, id, file) {
+  if (file.size > 10 * 1024 * 1024) {
+    alert("Arquivo muito grande! Limite de 10MB.");
+    return false;
+  }
+  try {
+    state.uploadProgresso = true;
+    render();
+    const st = window.firebaseStorage;
+    // Nome único: timestamp + nome original (limpo)
+    const nomeSeguro = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    const nomeArquivo = `${Date.now()}_${nomeSeguro}`;
+    const fileRef = st.ref(st.storage, `${STORAGE_PASTA}/${tipo}_${id}/${nomeArquivo}`);
+    await st.uploadBytes(fileRef, file);
+    await listarAnexos(tipo, id);
+    state.uploadProgresso = false;
+    render();
+    return true;
+  } catch (e) {
+    state.uploadProgresso = false;
+    alert("Erro ao enviar arquivo: " + e.message);
+    render();
+    return false;
+  }
+}
+
+// Deletar anexo
+async function deletarAnexo(tipo, id, fullPath) {
+  if (!confirm("Apagar este anexo? Não dá pra recuperar depois.")) return;
+  try {
+    const st = window.firebaseStorage;
+    const fileRef = st.ref(st.storage, fullPath);
+    await st.deleteObject(fileRef);
+    await listarAnexos(tipo, id);
+    render();
+  } catch (e) { alert("Erro ao apagar: " + e.message); }
+}
+
+// Carregar contagem de anexos pra todos os itens (rápido, só pra mostrar 📎 N)
+async function carregarContagemAnexos() {
+  try {
+    const st = window.firebaseStorage;
+    const rootRef = st.ref(st.storage, STORAGE_PASTA);
+    const result = await st.listAll(rootRef);
+    state.anexosCount = {};
+    for (const prefix of result.prefixes) {
+      const subResult = await st.listAll(prefix);
+      const key = prefix.name; // tipo_id
+      state.anexosCount[key] = subResult.items.length;
+    }
+    render();
+  } catch (e) {
+    console.error("Erro ao contar anexos:", e);
+  }
+}
+
+// === COMPUTAÇÕES ===
+function getDados() {
+  const mesAtual = HOJE.getMonth() + 1;
+  const anoAtual = HOJE.getFullYear();
+  const hoje0 = new Date(HOJE.getFullYear(), HOJE.getMonth(), HOJE.getDate());
+
+  // Mês anterior (pra comparativos)
+  let mesAnt = mesAtual - 1, anoAnt = anoAtual;
+  if (mesAnt === 0) { mesAnt = 12; anoAnt = anoAtual - 1; }
+
+  const imoveisProprios = state.imoveis.filter(i => i.status === "proprio").map(i => i.nome);
+  const receitasAtivas = state.receitas.filter(r => !imoveisProprios.includes(r.imovel));
+  const despesasAtivas = state.despesas.filter(d => !imoveisProprios.includes(d.imovel));
+  const imoveisAtivos = state.imoveis.filter(i => i.status !== "proprio");
+
+  const proximosVencimentos = despesasAtivas
+    .filter(d => d.status === "pendente")
+    .map(d => {
+      const data = new Date(d.ano, d.mes - 1, d.dia_venc);
+      const diasRestantes = Math.ceil((data - hoje0) / (1000 * 60 * 60 * 24));
+      return { ...d, dataVenc: data, diasRestantes };
+    })
+    .sort((a, b) => a.diasRestantes - b.diasRestantes);
+
+  // Mês atual
+  const totalReceitaMes = receitasAtivas.filter(r => r.mes === mesAtual && r.ano === anoAtual).reduce((s, r) => s + Number(r.valor), 0);
+  const totalDespesaMes = despesasAtivas.filter(d => d.mes === mesAtual && d.ano === anoAtual).reduce((s, d) => s + Number(d.valor), 0);
+  // Mês anterior (pra tendência)
+  const totalReceitaMesAnt = receitasAtivas.filter(r => r.mes === mesAnt && r.ano === anoAnt).reduce((s, r) => s + Number(r.valor), 0);
+  const totalDespesaMesAnt = despesasAtivas.filter(d => d.mes === mesAnt && d.ano === anoAnt).reduce((s, d) => s + Number(d.valor), 0);
+  // Variações %
+  const varReceita = totalReceitaMesAnt > 0 ? ((totalReceitaMes - totalReceitaMesAnt) / totalReceitaMesAnt * 100) : null;
+  const varDespesa = totalDespesaMesAnt > 0 ? ((totalDespesaMes - totalDespesaMesAnt) / totalDespesaMesAnt * 100) : null;
+  // Ano
+  const totalReceitaAno = receitasAtivas.filter(r => r.ano === anoAtual).reduce((s, r) => s + Number(r.valor), 0);
+  const totalDespesaAno = despesasAtivas.filter(d => d.ano === anoAtual).reduce((s, d) => s + Number(d.valor), 0);
+  // Ano passado (pra comparativo ano a ano)
+  const anoPassado = anoAtual - 1;
+  const totalReceitaAnoPassado = receitasAtivas.filter(r => r.ano === anoPassado).reduce((s, r) => s + Number(r.valor), 0);
+  const totalDespesaAnoPassado = despesasAtivas.filter(d => d.ano === anoPassado).reduce((s, d) => s + Number(d.valor), 0);
+
+  // Projeção próximos 3 meses (despesas pendentes)
+  const projecao3meses = [];
+  for (let i = 0; i < 3; i++) {
+    let pm = mesAtual + i, pa = anoAtual;
+    while (pm > 12) { pm -= 12; pa++; }
+    const desp = despesasAtivas.filter(d => d.mes === pm && d.ano === pa && d.status === 'pendente').reduce((s, d) => s + Number(d.valor), 0);
+    projecao3meses.push({ mes: pm, ano: pa, total: desp });
+  }
+
+  const indicadores = {
+    ativos: state.imoveis.filter(i => i.status === "ativo").length,
+    totalReceitaMes, totalDespesaMes, resultadoMes: totalReceitaMes - totalDespesaMes,
+    totalReceitaAno, totalDespesaAno,
+    totalReceitaAnoPassado, totalDespesaAnoPassado,
+    varReceita, varDespesa,
+    venc7dias: proximosVencimentos.filter(v => v.diasRestantes >= 0 && v.diasRestantes <= 7).length,
+    vencidos: proximosVencimentos.filter(v => v.diasRestantes < 0).length,
+  };
+
+  // Resumo por imóvel (mês + ano + total + margem operacional)
+  const resumoImoveis = imoveisAtivos.map(im => {
+    const recMes = receitasAtivas.filter(r => r.imovel === im.nome && r.mes === mesAtual && r.ano === anoAtual).reduce((s, r) => s + Number(r.valor), 0);
+    const despMes = despesasAtivas.filter(d => d.imovel === im.nome && d.mes === mesAtual && d.ano === anoAtual).reduce((s, d) => s + Number(d.valor), 0);
+    const recAno = receitasAtivas.filter(r => r.imovel === im.nome && r.ano === anoAtual).reduce((s, r) => s + Number(r.valor), 0);
+    const despAno = despesasAtivas.filter(d => d.imovel === im.nome && d.ano === anoAtual).reduce((s, d) => s + Number(d.valor), 0);
+    const recTot = receitasAtivas.filter(r => r.imovel === im.nome).reduce((s, r) => s + Number(r.valor), 0);
+    const despTot = despesasAtivas.filter(d => d.imovel === im.nome).reduce((s, d) => s + Number(d.valor), 0);
+    // Margem operacional: (receita - despesa) / receita
+    const margemAno = recAno > 0 ? ((recAno - despAno) / recAno * 100) : null;
+    const margemMes = recMes > 0 ? ((recMes - despMes) / recMes * 100) : null;
+    return {
+      nome: im.nome, status: im.status, inquilino: im.inquilino, dia_vencimento: im.dia_vencimento,
+      aluguel: im.aluguel, endereco: im.endereco, id: im.id,
+      receitaMes: recMes, despesaMes: despMes, resultadoMes: recMes - despMes,
+      receitaAno: recAno, despesaAno: despAno, resultadoAno: recAno - despAno,
+      receitaTotal: recTot, despesaTotal: despTot, resultadoTotal: recTot - despTot,
+      margemMes, margemAno,
+    };
+  });
+
+  const evolucaoMensal = MESES.map((mes, idx) => {
+    const m = idx + 1;
+    const rec = receitasAtivas.filter(r => r.mes === m && r.ano === anoAtual).reduce((s, r) => s + Number(r.valor), 0);
+    const desp = despesasAtivas.filter(d => d.mes === m && d.ano === anoAtual).reduce((s, d) => s + Number(d.valor), 0);
+    return { mes, receitas: Math.round(rec), despesas: Math.round(desp), resultado: Math.round(rec - desp) };
+  });
+
+  // Alertas inteligentes: imóvel ativo (alugado) sem aluguel cadastrado este mês
+  const alertasInteligentes = [];
+  imoveisAtivos.forEach(im => {
+    if (im.status === 'ativo' && im.inquilino) {
+      const temAluguel = receitasAtivas.find(r => r.imovel === im.nome && r.mes === mesAtual && r.ano === anoAtual);
+      if (!temAluguel) {
+        alertasInteligentes.push({ tipo: 'aluguel_faltando', imovel: im.nome, msg: `Aluguel de ${im.nome} (inquilino ${im.inquilino}) não foi cadastrado este mês` });
+      }
+    }
+  });
+
+  return {
+    mesAtual, anoAtual, mesAnt, anoAnt, anoPassado,
+    imoveisAtivos, receitasAtivas, despesasAtivas, proximosVencimentos,
+    indicadores, resumoImoveis, evolucaoMensal,
+    alertasInteligentes, projecao3meses,
+  };
+}
+
+// === RENDERIZAÇÃO ===
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function render() {
+  const root = document.getElementById('app');
+
+  if (state.carregando) {
+    root.innerHTML = `<div class="min-h-screen flex items-center justify-center"><div class="text-center"><div class="accent">${icons.loader}</div><p class="titulo-serif text-2xl mt-4" style="color:#1a3a2a">Carregando dados...</p></div></div>`;
+    return;
+  }
+
+  if (state.erro) {
+    root.innerHTML = `<div class="min-h-screen flex items-center justify-center p-6"><div class="card rounded-xl p-8 max-w-md"><div class="text-red-700 mb-4">${icons.alert}</div><h2 class="titulo-serif text-2xl font-bold mb-2" style="color:#1a3a2a">Erro de conexão</h2><p class="text-sm text-stone-600 mb-4">${escapeHtml(state.erro)}</p><button onclick="carregarDados()" class="accent-bg text-amber-50 px-4 py-2 rounded-md text-sm font-semibold">Tentar novamente</button></div></div>`;
+    return;
+  }
+
+  const d = getDados();
+  let html = renderHeader();
+
+  if (state.aba === 'dashboard') html += renderDashboard(d);
+  else if (state.aba === 'imoveis') html += renderImoveis(d);
+  else if (state.aba === 'receitas') html += renderReceitas(d);
+  else if (state.aba === 'despesas') html += renderDespesas(d);
+  else if (state.aba === 'vencimentos') html += renderVencimentos(d);
+  else if (state.aba === 'comparativo') html += renderComparativo(d);
+  else if (state.aba === 'graficos') html += renderGraficos(d);
+
+  if (state.modalImovel) html += renderModalImovel();
+  if (state.modalDespesa) html += renderModalDespesa(d);
+  if (state.modalReceita) html += renderModalReceita(d);
+  if (state.modalDetalheImovel) html += renderModalDetalheImovel(d);
+  if (state.modalAnexos) html += renderModalAnexos();
+  if (state.modalDocumentos) html += renderModalDocumentos();
+  if (state.modalGerarRecorrentes) html += renderModalGerarRecorrentes();
+  if (state.modalExtrato) html += renderModalExtrato();
+
+  root.innerHTML = html;
+}
+
+function renderHeader() {
+  const tabs = [
+    { id: 'dashboard', label: 'Dashboard', icon: icons.bar },
+    { id: 'imoveis', label: 'Imóveis', icon: icons.home },
+    { id: 'receitas', label: 'Receitas', icon: icons.dollar },
+    { id: 'despesas', label: 'Despesas', icon: icons.file },
+    { id: 'vencimentos', label: 'Vencimentos', icon: icons.calendar },
+    { id: 'comparativo', label: 'Comparativo', icon: icons.trending },
+    { id: 'graficos', label: 'Gráficos', icon: icons.bar },
+  ];
+  return `
+    <header class="border-b" style="border-color:#d4c5a0;background:#fdfbf6">
+      <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between flex-wrap gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-lg accent-bg flex items-center justify-center text-amber-100">${icons.building}</div>
+          <div>
+            <h1 class="titulo-serif text-3xl font-bold" style="color:#1a3a2a;letter-spacing:-0.02em;line-height:1">Mille Miglia</h1>
+            <p class="text-xs uppercase tracking-widest accent-gold font-semibold mt-1">Gestão de Imóveis</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="ativarNotificacoes()" class="text-xs flex items-center gap-1.5 px-3 py-2 rounded-md hover:bg-amber-50" style="color:#5d4037">${icons.bell} Ativar alertas</button>
+          <button onclick="exportarCalendario()" class="text-xs flex items-center gap-1.5 px-3 py-2 rounded-md hover:bg-amber-50" style="color:#5d4037">${icons.download} Exportar Calendário</button>
+          <button onclick="sair()" class="text-xs px-3 py-2 rounded-md hover:bg-amber-50" style="color:#5d4037" title="${escapeHtml(window.usuario?.email || '')}">Sair</button>
+        </div>
+      </div>
+      <nav class="max-w-7xl mx-auto px-6 flex gap-1 overflow-x-auto">
+        ${tabs.map(t => `
+          <button onclick="setAba('${t.id}')" class="flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${state.aba === t.id ? 'accent' : 'border-transparent text-stone-500 hover:text-stone-800'}" style="${state.aba === t.id ? 'border-color:#1a4d3a' : ''}">${t.icon} ${t.label}</button>
+        `).join('')}
+      </nav>
+    </header>
+  `;
+}
+
+function renderDashboard(d) {
+  const ind = d.indicadores;
+  const alertas = (ind.vencidos > 0 || ind.venc7dias > 0) ? `
+    <div class="card rounded-xl p-5 border-l-4" style="border-left-color:#c62828">
+      <div class="flex items-start gap-4">
+        <div class="text-red-700 flex-shrink-0">${icons.alert}</div>
+        <div class="flex-1">
+          <h3 class="titulo-serif text-xl font-semibold text-red-900">Atenção aos vencimentos</h3>
+          <p class="text-sm text-stone-700 mt-1">
+            ${ind.vencidos > 0 ? `<span class="font-semibold text-red-700">${ind.vencidos} vencimento(s) atrasado(s). </span>` : ''}
+            ${ind.venc7dias > 0 ? `<span>${ind.venc7dias} despesa(s) vence(m) nos próximos 7 dias.</span>` : ''}
+          </p>
+          <button onclick="setAba('vencimentos')" class="mt-3 text-sm font-semibold accent hover:underline">Ver todos os vencimentos →</button>
+        </div>
+      </div>
+    </div>` : '';
+
+  const alertasInteligentes = d.alertasInteligentes.length > 0 ? `
+    <div class="card rounded-xl p-5 border-l-4" style="border-left-color:#ca8a04">
+      <div class="flex items-start gap-4">
+        <div style="color:#ca8a04" class="flex-shrink-0">${icons.alert}</div>
+        <div class="flex-1">
+          <h3 class="titulo-serif text-xl font-semibold" style="color:#854d0e">Avisos</h3>
+          <ul class="text-sm text-stone-700 mt-1 space-y-1">
+            ${d.alertasInteligentes.map(a => `<li>• ${escapeHtml(a.msg)}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    </div>` : '';
+
+  // Helpers de tendência
+  const tendenciaReceita = (v) => {
+    if (v === null || v === undefined) return '';
+    const cor = v > 0 ? '#16a34a' : '#c62828';
+    return `<span class="text-xs font-semibold ml-1" style="color:${cor}">${v > 0 ? '▲' : '▼'} ${Math.abs(v).toFixed(0)}%</span>`;
+  };
+  const tendenciaDespesa = (v) => {
+    if (v === null || v === undefined) return '';
+    const cor = v > 0 ? '#c62828' : '#16a34a';
+    return `<span class="text-xs font-semibold ml-1" style="color:${cor}">${v > 0 ? '▲' : '▼'} ${Math.abs(v).toFixed(0)}%</span>`;
+  };
+
+  return `
+    <main class="max-w-7xl mx-auto px-6 py-8">
+      <div class="space-y-8">
+        ${alertas}
+        ${alertasInteligentes}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div class="card rounded-xl p-6 hover-lift">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs uppercase tracking-widest text-stone-500 font-semibold">Imóveis ativos</span>
+              <span class="accent-gold">${icons.home}</span>
+            </div>
+            <div class="titulo-serif text-4xl font-bold accent num-mono">${ind.ativos}</div>
+            <div class="text-xs text-stone-500 mt-1">de ${state.imoveis.length} cadastrados</div>
+          </div>
+          <div class="card rounded-xl p-6 hover-lift">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs uppercase tracking-widest text-stone-500 font-semibold">Receita do mês ${tendenciaReceita(ind.varReceita)}</span>
+              <span class="accent-gold">${icons.trending}</span>
+            </div>
+            <div class="titulo-serif text-3xl font-bold accent num-mono">${formatBRL(ind.totalReceitaMes)}</div>
+            <div class="text-xs text-stone-500 mt-1">${MESES[d.mesAtual-1]}/${d.anoAtual} · ano: ${formatBRL(ind.totalReceitaAno)}</div>
+          </div>
+          <div class="card rounded-xl p-6 hover-lift">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs uppercase tracking-widest text-stone-500 font-semibold">Despesas do mês ${tendenciaDespesa(ind.varDespesa)}</span>
+              <span style="color:#8b3a3a">${icons.file}</span>
+            </div>
+            <div class="titulo-serif text-3xl font-bold num-mono" style="color:#8b3a3a">${formatBRL(ind.totalDespesaMes)}</div>
+            <div class="text-xs text-stone-500 mt-1">${MESES[d.mesAtual-1]}/${d.anoAtual} · ano: ${formatBRL(ind.totalDespesaAno)}</div>
+          </div>
+          <div class="card rounded-xl p-6 hover-lift" style="background:${ind.resultadoMes >= 0 ? 'linear-gradient(135deg,#1a4d3a,#2e6b52)' : 'linear-gradient(135deg,#8b3a3a,#a64453)'};color:#fdfbf6">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs uppercase tracking-widest opacity-80 font-semibold">Resultado do mês</span>
+              ${icons.dollar}
+            </div>
+            <div class="titulo-serif text-3xl font-bold num-mono">${formatBRL(ind.resultadoMes)}</div>
+            <div class="text-xs opacity-80 mt-1">${MESES[d.mesAtual-1]}/${d.anoAtual}</div>
+          </div>
+        </div>
+
+        <div class="card rounded-xl p-6">
+          <div class="flex items-baseline justify-between mb-4">
+            <h3 class="titulo-serif text-2xl font-bold" style="color:#1a3a2a">Projeção de despesas</h3>
+            <span class="text-xs uppercase tracking-widest text-stone-500 font-semibold">Próximos 3 meses (pendentes)</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            ${d.projecao3meses.map(p => `
+              <div class="rounded-lg p-4" style="background:#f5f1e8">
+                <div class="text-xs uppercase tracking-wider font-semibold" style="color:#5d4037">${MESES[p.mes-1]}/${p.ano}</div>
+                <div class="titulo-serif text-2xl font-bold num-mono mt-1" style="color:#1a3a2a">${formatBRL(p.total)}</div>
+                <div class="text-xs text-stone-500 mt-1">despesas a pagar</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="card rounded-xl p-6 lg:col-span-2">
+            <h3 class="titulo-serif text-2xl font-bold mb-1" style="color:#1a3a2a">Evolução Mensal ${d.anoAtual}</h3>
+            <p class="text-xs text-stone-500 mb-4">Receitas, despesas e resultado por mês</p>
+            ${renderLineChart(d.evolucaoMensal)}
+          </div>
+          <div class="card rounded-xl p-6">
+            <h3 class="titulo-serif text-2xl font-bold mb-1" style="color:#1a3a2a">Próximos Vencimentos</h3>
+            <p class="text-xs text-stone-500 mb-4">Os 5 mais urgentes</p>
+            <div class="space-y-3">
+              ${d.proximosVencimentos.slice(0, 5).map(v => {
+                const cor = v.diasRestantes < 0 ? '#c62828' : v.diasRestantes <= 7 ? '#ea580c' : v.diasRestantes <= 30 ? '#ca8a04' : '#16a34a';
+                const corTexto = v.diasRestantes < 0 ? '#c62828' : v.diasRestantes <= 7 ? '#ea580c' : '#5d4037';
+                return `<div class="border-l-4 pl-3 py-1" style="border-color:${cor}">
+                  <div class="text-sm font-semibold" style="color:#1a3a2a">${escapeHtml(v.tipo)}</div>
+                  <div class="text-xs text-stone-500">${escapeHtml(v.imovel)}</div>
+                  <div class="flex justify-between items-center mt-1">
+                    <span class="text-xs num-mono text-stone-600">${v.dataVenc.toLocaleDateString('pt-BR')}</span>
+                    <span class="text-sm font-bold num-mono" style="color:#1a4d3a">${formatBRL(v.valor)}</span>
+                  </div>
+                  <div class="text-xs mt-1 font-semibold" style="color:${corTexto}">${v.diasRestantes < 0 ? Math.abs(v.diasRestantes) + ' dia(s) atrasado' : v.diasRestantes === 0 ? 'Hoje!' : 'em ' + v.diasRestantes + ' dia(s)'}</div>
+                </div>`;
+              }).join('')}
+              ${d.proximosVencimentos.length === 0 ? '<p class="text-sm text-stone-500 italic">Nenhum vencimento pendente</p>' : ''}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-baseline justify-between mb-4">
+            <h3 class="titulo-serif text-2xl font-bold" style="color:#1a3a2a">Resumo por Imóvel</h3>
+            <span class="text-xs uppercase tracking-widest text-stone-500 font-semibold">${MESES[d.mesAtual-1]}/${d.anoAtual} · Acum. ${d.anoAtual}</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            ${d.resumoImoveis.map(r => `
+              <div class="card rounded-xl p-5 hover-lift">
+                <div class="flex items-start justify-between mb-3">
+                  <div class="flex-1">
+                    <div class="text-sm font-semibold" style="color:#1a3a2a">${escapeHtml(r.nome)}</div>
+                    ${r.inquilino ? `<div class="text-xs text-stone-500 mt-0.5">${escapeHtml(r.inquilino)}</div>` : ''}
+                  </div>
+                  <span class="pill" style="background:${r.status === 'ativo' ? '#d1fae5' : r.status === 'vago' ? '#fee2e2' : '#fef3c7'};color:${r.status === 'ativo' ? '#065f46' : r.status === 'vago' ? '#991b1b' : '#854d0e'}">${escapeHtml(r.status)}</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mt-3">
+                  <div class="rounded-lg p-3" style="background:#f5f1e8">
+                    <div class="text-xs uppercase tracking-wider text-stone-500 font-semibold mb-1">Mês</div>
+                    ${r.receitaMes > 0 ? `<div class="text-xs flex justify-between"><span class="text-stone-500">Rec</span><span class="num-mono accent font-semibold">${formatBRL(r.receitaMes)}</span></div>` : ''}
+                    ${r.despesaMes > 0 ? `<div class="text-xs flex justify-between"><span class="text-stone-500">Desp</span><span class="num-mono" style="color:#8b3a3a">${formatBRL(r.despesaMes)}</span></div>` : ''}
+                    <div class="text-xs flex justify-between pt-1 mt-1 border-t" style="border-color:#e8dfc9">
+                      <span class="font-semibold">Result.</span>
+                      <span class="num-mono font-bold" style="color:${r.resultadoMes >= 0 ? '#1a4d3a' : '#8b3a3a'}">${formatBRL(r.resultadoMes)}</span>
+                    </div>
+                  </div>
+                  <div class="rounded-lg p-3" style="background:#f5f1e8">
+                    <div class="text-xs uppercase tracking-wider text-stone-500 font-semibold mb-1">Ano ${d.anoAtual}</div>
+                    ${r.receitaAno > 0 ? `<div class="text-xs flex justify-between"><span class="text-stone-500">Rec</span><span class="num-mono accent font-semibold">${formatBRL(r.receitaAno)}</span></div>` : ''}
+                    ${r.despesaAno > 0 ? `<div class="text-xs flex justify-between"><span class="text-stone-500">Desp</span><span class="num-mono" style="color:#8b3a3a">${formatBRL(r.despesaAno)}</span></div>` : ''}
+                    <div class="text-xs flex justify-between pt-1 mt-1 border-t" style="border-color:#e8dfc9">
+                      <span class="font-semibold">Result.</span>
+                      <span class="num-mono font-bold" style="color:${r.resultadoAno >= 0 ? '#1a4d3a' : '#8b3a3a'}">${formatBRL(r.resultadoAno)}</span>
+                    </div>
+                  </div>
+                </div>
+                ${r.margemAno !== null ? `<div class="mt-3 text-xs text-stone-500 flex justify-between"><span>Margem operacional (ano)</span><span class="num-mono font-semibold" style="color:${r.margemAno >= 50 ? '#16a34a' : r.margemAno >= 0 ? '#ca8a04' : '#c62828'}">${r.margemAno.toFixed(1)}%</span></div>` : ''}
+                <button onclick="abrirDetalheImovel('${escapeHtml(r.nome)}')" class="w-full mt-3 py-2 text-xs font-semibold rounded-md hover:opacity-80 accent-bg" style="color:#fdfbf6">Ver detalhes</button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    </main>
+  `;
+}
+
+function renderLineChart(data) {
+  const w = 600, h = 240, padL = 50, padR = 20, padT = 20, padB = 30;
+  const chartW = w - padL - padR, chartH = h - padT - padB;
+  const allVals = data.flatMap(d => [d.receitas, d.despesas, d.resultado]);
+  const maxV = Math.max(...allVals, 100);
+  const minV = Math.min(...allVals, 0);
+  const range = maxV - minV || 1;
+  const xStep = chartW / (data.length - 1 || 1);
+
+  const yScale = v => padT + chartH - ((v - minV) / range) * chartH;
+  const xScale = i => padL + i * xStep;
+
+  const linePath = (key, color) => {
+    const pts = data.map((d, i) => `${xScale(i)},${yScale(d[key])}`).join(' L');
+    return `<path d="M${pts}" stroke="${color}" stroke-width="2.5" fill="none"/>` +
+           data.map((d, i) => `<circle cx="${xScale(i)}" cy="${yScale(d[key])}" r="3.5" fill="${color}"/>`).join('');
+  };
+
+  const yTicks = 4;
+  const gridLines = Array.from({length: yTicks + 1}, (_, i) => {
+    const v = minV + (range * i / yTicks);
+    const y = yScale(v);
+    return `<line x1="${padL}" y1="${y}" x2="${w-padR}" y2="${y}" stroke="#e8dfc9" stroke-dasharray="3,3"/><text x="${padL-8}" y="${y+4}" text-anchor="end" font-size="10" fill="#5d4037">${(v/1000).toFixed(0)}k</text>`;
+  }).join('');
+
+  return `<svg viewBox="0 0 ${w} ${h+40}" style="width:100%;height:auto" preserveAspectRatio="xMidYMid meet">
+    ${gridLines}
+    ${data.map((d, i) => `<text x="${xScale(i)}" y="${h-padB+15}" text-anchor="middle" font-size="10" fill="#5d4037">${d.mes}</text>`).join('')}
+    ${linePath('receitas', '#1a4d3a')}
+    ${linePath('despesas', '#8b3a3a')}
+    ${linePath('resultado', '#c19a4a')}
+    <g transform="translate(${padL}, ${h+15})">
+      <circle cx="6" cy="6" r="5" fill="#1a4d3a"/><text x="16" y="10" font-size="11" fill="#5d4037">Receitas</text>
+      <circle cx="90" cy="6" r="5" fill="#8b3a3a"/><text x="100" y="10" font-size="11" fill="#5d4037">Despesas</text>
+      <circle cx="180" cy="6" r="5" fill="#c19a4a"/><text x="190" y="10" font-size="11" fill="#5d4037">Resultado</text>
+    </g>
+  </svg>`;
+}
+
+function renderImoveis(d) {
+  return `<main class="max-w-7xl mx-auto px-6 py-8">
+    <div class="space-y-6">
+      <div class="flex justify-between items-center flex-wrap gap-4">
+        <div>
+          <h2 class="titulo-serif text-3xl font-bold" style="color:#1a3a2a">Imóveis cadastrados</h2>
+          <p class="text-sm text-stone-500">${d.imoveisAtivos.length} imóveis no portfólio</p>
+        </div>
+        <button onclick="abrirModalImovel()" class="accent-bg text-amber-50 px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 hover-lift">${icons.plus} Novo imóvel</button>
+      </div>
+      <div class="card rounded-xl overflow-hidden overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead style="background:#1a4d3a">
+            <tr>
+              <th class="text-left px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Imóvel</th>
+              <th class="text-left px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Tipo</th>
+              <th class="text-left px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Inquilino</th>
+              <th class="text-right px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Aluguel</th>
+              <th class="text-right px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Cond.</th>
+              <th class="text-right px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">IPTU</th>
+              <th class="text-center px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Venc.</th>
+              <th class="text-center px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Status</th>
+              <th class="px-4 py-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${d.imoveisAtivos.map((im, idx) => {
+              const badgeClass = im.status === 'ativo' ? 'badge-tranquilo' : im.status === 'vago' ? 'badge-vencido' : im.status === 'construcao' ? 'badge-proximo' : 'badge-pago';
+              return `<tr class="${idx % 2 === 0 ? 'bg-amber-50/30' : ''}" style="border-bottom:1px solid #e8dfc9">
+                <td class="px-4 py-3">
+                  <div class="font-semibold" style="color:#1a3a2a">${escapeHtml(im.nome)}</div>
+                  <div class="text-xs text-stone-500">${escapeHtml(im.endereco)}</div>
+                </td>
+                <td class="px-4 py-3"><span class="pill" style="background:#f5f1e8;color:#5d4037">${escapeHtml(im.tipo)}</span></td>
+                <td class="px-4 py-3 text-stone-600">${escapeHtml(im.inquilino || '—')}</td>
+                <td class="px-4 py-3 text-right num-mono accent font-semibold">${formatBRL(im.aluguel)}</td>
+                <td class="px-4 py-3 text-right num-mono text-stone-600">${formatBRL(im.condominio)}</td>
+                <td class="px-4 py-3 text-right num-mono text-stone-600">${formatBRL(im.iptu)}</td>
+                <td class="px-4 py-3 text-center num-mono">dia ${im.dia_vencimento}</td>
+                <td class="px-4 py-3 text-center"><span class="pill ${badgeClass}">${escapeHtml(im.status)}</span></td>
+                <td class="px-4 py-3"><div class="flex gap-2 justify-end items-center">
+                  <button onclick="abrirModalDocumentos('${im.id}','${escapeHtml(im.nome)}')" class="p-1.5 rounded hover:bg-amber-100 text-xs flex items-center gap-1" title="Documentos" style="color:#5d4037">📁${totalDocsImovel(im.id) > 0 ? ' <span class="font-bold">' + totalDocsImovel(im.id) + '</span>' : ''}</button>
+                  <button onclick="editarImovel('${im.id}')" class="p-1.5 rounded hover:bg-amber-100" title="Editar imóvel">${icons.edit}</button>
+                  <button onclick="removerImovel('${im.id}')" class="p-1.5 rounded hover:bg-red-100 text-red-700" title="Remover imóvel">${icons.trash}</button>
+                </div></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>`;
+}
+
+// Helper: gera título legível do card de total baseado nos filtros aplicados
+function rotuloFiltro(d) {
+  const mesAtual = HOJE.getMonth() + 1;
+  const anoAtual = HOJE.getFullYear();
+  const partes = [];
+
+  // Imóvel
+  if (state.filtroImovelLanc !== 'todos') {
+    partes.push(state.filtroImovelLanc);
+  }
+
+  // Período rápido
+  if (state.filtroPeriodoRapido === 'mes') {
+    partes.push(`${MESES[mesAtual-1]}/${anoAtual}`);
+  } else if (state.filtroPeriodoRapido === 'ano') {
+    partes.push(anoAtual);
+  } else if (state.filtroPeriodoRapido === 'hoje') {
+    partes.push('Hoje');
+  }
+
+  // Mês/ano específico
+  if (state.filtroMesLanc !== 'todos' && state.filtroAnoLanc !== 'todos') {
+    partes.push(`${MESES[Number(state.filtroMesLanc)-1]}/${state.filtroAnoLanc}`);
+  } else if (state.filtroMesLanc !== 'todos') {
+    partes.push(`${MESES[Number(state.filtroMesLanc)-1]} (todos os anos)`);
+  } else if (state.filtroAnoLanc !== 'todos') {
+    partes.push(`Ano ${state.filtroAnoLanc}`);
+  }
+
+  // Período de/até
+  if (state.filtroDataInicio || state.filtroDataFim) {
+    const ini = state.filtroDataInicio ? state.filtroDataInicio.replace('-', '/') : '...';
+    const fim = state.filtroDataFim ? state.filtroDataFim.replace('-', '/') : '...';
+    partes.push(`${ini} → ${fim}`);
+  }
+
+  if (partes.length === 0) return `${MESES[mesAtual-1]}/${anoAtual}`;
+  return partes.join(' · ');
+}
+
+// Helper: detecta se há algum filtro ativo (diferente do padrão)
+function temFiltroAtivo() {
+  return state.filtroImovelLanc !== 'todos'
+    || state.filtroMesLanc !== 'todos'
+    || state.filtroAnoLanc !== 'todos'
+    || state.filtroPeriodoRapido !== 'tudo'
+    || state.filtroDataInicio
+    || state.filtroDataFim;
+}
+
+function aplicarFiltrosLanc(lista) {
+  const mesAtual = HOJE.getMonth() + 1;
+  const anoAtual = HOJE.getFullYear();
+  let r = [...lista];
+
+  if (state.filtroImovelLanc !== 'todos') r = r.filter(x => x.imovel === state.filtroImovelLanc);
+
+  // Período rápido
+  if (state.filtroPeriodoRapido === 'mes') {
+    r = r.filter(x => x.mes === mesAtual && x.ano === anoAtual);
+  } else if (state.filtroPeriodoRapido === 'ano') {
+    r = r.filter(x => x.ano === anoAtual);
+  } else if (state.filtroPeriodoRapido === 'hoje') {
+    // só lançamentos de hoje (despesas têm dia_venc, receitas não)
+    r = r.filter(x => x.mes === mesAtual && x.ano === anoAtual && (x.dia_venc === HOJE.getDate() || !x.dia_venc));
+  }
+
+  // Mês/ano específicos
+  if (state.filtroMesLanc !== 'todos') r = r.filter(x => x.mes === Number(state.filtroMesLanc));
+  if (state.filtroAnoLanc !== 'todos') r = r.filter(x => x.ano === Number(state.filtroAnoLanc));
+
+  // Período de/até
+  if (state.filtroDataInicio) {
+    const [aIni, mIni] = state.filtroDataInicio.split('-').map(Number);
+    r = r.filter(x => (x.ano > aIni) || (x.ano === aIni && x.mes >= mIni));
+  }
+  if (state.filtroDataFim) {
+    const [aFim, mFim] = state.filtroDataFim.split('-').map(Number);
+    r = r.filter(x => (x.ano < aFim) || (x.ano === aFim && x.mes <= mFim));
+  }
+
+  return r;
+}
+
+function renderFiltrosLanc(d) {
+  const anosDisp = [...new Set([...d.receitasAtivas, ...d.despesasAtivas].map(x => x.ano))].sort();
+  return `
+    <div class="card rounded-xl p-4 space-y-4">
+      <div class="flex gap-2 flex-wrap">
+        <span class="text-xs uppercase tracking-wider font-semibold mr-2 self-center" style="color:#5d4037">Atalhos:</span>
+        ${[
+          {k: 'tudo', l: 'Tudo'},
+          {k: 'mes', l: 'Este mês'},
+          {k: 'ano', l: 'Este ano'},
+        ].map(b => `<button onclick="setFiltroPeriodoRapido('${b.k}')" class="pill" style="cursor:pointer;${state.filtroPeriodoRapido === b.k ? 'background:#1a4d3a;color:#fdfbf6' : 'background:#f5e6d8;color:#6b4423;border:1px solid #d4b896'}">${b.l}</button>`).join('')}
+        <button onclick="limparFiltrosLanc()" class="text-xs ml-auto self-center hover:underline" style="color:#8b3a3a">Limpar tudo</button>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div>
+          <label class="block text-xs uppercase tracking-wider font-semibold mb-1" style="color:#5d4037">Imóvel</label>
+          <select onchange="setFiltroImovelLanc(this.value)" class="input">
+            <option value="todos">Todos</option>
+            ${d.imoveisAtivos.map(i => `<option value="${escapeHtml(i.nome)}" ${state.filtroImovelLanc === i.nome ? 'selected' : ''}>${escapeHtml(i.nome)}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs uppercase tracking-wider font-semibold mb-1" style="color:#5d4037">Mês</label>
+          <select onchange="setFiltroMesLanc(this.value)" class="input">
+            <option value="todos">Todos</option>
+            ${MESES.map((m, i) => `<option value="${i+1}" ${state.filtroMesLanc == i+1 ? 'selected' : ''}>${m}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs uppercase tracking-wider font-semibold mb-1" style="color:#5d4037">Ano</label>
+          <select onchange="setFiltroAnoLanc(this.value)" class="input">
+            <option value="todos">Todos</option>
+            ${anosDisp.map(a => `<option value="${a}" ${state.filtroAnoLanc == a ? 'selected' : ''}>${a}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs uppercase tracking-wider font-semibold mb-1" style="color:#5d4037">De</label>
+          <input type="month" value="${state.filtroDataInicio}" onchange="setFiltroDataInicio(this.value)" class="input"/>
+        </div>
+        <div>
+          <label class="block text-xs uppercase tracking-wider font-semibold mb-1" style="color:#5d4037">Até</label>
+          <input type="month" value="${state.filtroDataFim}" onchange="setFiltroDataFim(this.value)" class="input"/>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderReceitas(d) {
+  const ind = d.indicadores;
+  const receitasFiltradas = aplicarFiltrosLanc(d.receitasAtivas);
+  const totalFiltrado = receitasFiltradas.reduce((s, r) => s + Number(r.valor), 0);
+
+  return `<main class="max-w-7xl mx-auto px-6 py-8">
+    <div class="space-y-6">
+      <div class="flex justify-between items-center flex-wrap gap-4">
+        <div>
+          <h2 class="titulo-serif text-3xl font-bold" style="color:#1a3a2a">Receitas</h2>
+          <p class="text-sm text-stone-500">${receitasFiltradas.length} de ${d.receitasAtivas.length} lançamentos · Total filtrado: ${formatBRL(totalFiltrado)}</p>
+        </div>
+        <div class="flex gap-2 flex-wrap"><button onclick="abrirModalExtrato()" class="px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 hover-lift" style="background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0">🏦 Conferir extrato</button>
+        <button onclick="abrirModalReceita()" class="accent-bg text-amber-50 px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 hover-lift">${icons.plus} Lançar receita</button></div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="card rounded-xl p-6" style="background:linear-gradient(135deg,#1a4d3a,#2e6b52);color:#fdfbf6">
+          <div class="text-xs uppercase tracking-widest opacity-80 font-semibold mb-2">${temFiltroAtivo() ? 'Total filtrado' : 'Total do mês'} · ${rotuloFiltro(d)}</div>
+          <div class="titulo-serif text-4xl font-bold num-mono">${formatBRL(temFiltroAtivo() ? totalFiltrado : ind.totalReceitaMes)}</div>
+        </div>
+        <div class="card rounded-xl p-6">
+          <div class="text-xs uppercase tracking-widest text-stone-500 font-semibold mb-2">Acumulado do ano · ${d.anoAtual}</div>
+          <div class="titulo-serif text-4xl font-bold accent num-mono">${formatBRL(ind.totalReceitaAno)}</div>
+        </div>
+      </div>
+      ${renderFiltrosLanc(d)}
+      <div class="card rounded-xl overflow-hidden overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead style="background:#1a4d3a">
+            <tr>
+              <th class="text-left px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Imóvel</th>
+              <th class="text-center px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Mês/Ano</th>
+              <th class="text-right px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Valor</th>
+              <th class="px-4 py-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${receitasFiltradas.map((r, idx) => `<tr class="${idx % 2 === 0 ? 'bg-amber-50/30' : ''}" style="border-bottom:1px solid #e8dfc9">
+              <td class="px-4 py-3 font-semibold" style="color:#1a3a2a">${escapeHtml(r.imovel)}</td>
+              <td class="px-4 py-3 text-center num-mono">${MESES[r.mes-1]}/${r.ano}</td>
+              <td class="px-4 py-3 text-right num-mono accent font-semibold">${formatBRL(r.valor)}</td>
+              <td class="px-4 py-3"><div class="flex gap-2 justify-end items-center">
+                <button onclick="abrirModalAnexos('receita','${r.id}','Receita ${escapeHtml(r.imovel)} ${MESES[r.mes-1]}/${r.ano}')" class="p-1.5 rounded hover:bg-amber-100 text-xs flex items-center gap-1" title="Anexos" style="color:#5d4037">📎${state.anexosCount['receita_' + r.id] > 0 ? ' <span class="font-bold">' + state.anexosCount['receita_' + r.id] + '</span>' : ''}</button>
+                <button onclick="editarReceita('${r.id}')" class="p-1.5 rounded hover:bg-amber-100">${icons.edit}</button>
+                <button onclick="removerReceita('${r.id}')" class="p-1.5 rounded hover:bg-red-100 text-red-700">${icons.trash}</button>
+              </div></td>
+            </tr>`).join('')}
+            ${receitasFiltradas.length === 0 ? '<tr><td colspan="4" class="text-center p-8 text-stone-500 italic">Nenhuma receita com esses filtros.</td></tr>' : ''}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>`;
+}
+
+function renderDespesas(d) {
+  const ind = d.indicadores;
+  const despesasFiltradas = aplicarFiltrosLanc(d.despesasAtivas);
+  const totalFiltrado = despesasFiltradas.reduce((s, x) => s + Number(x.valor), 0);
+
+  return `<main class="max-w-7xl mx-auto px-6 py-8">
+    <div class="space-y-6">
+      <div class="flex justify-between items-center flex-wrap gap-4">
+        <div>
+          <h2 class="titulo-serif text-3xl font-bold" style="color:#1a3a2a">Despesas</h2>
+          <p class="text-sm text-stone-500">${despesasFiltradas.length} de ${d.despesasAtivas.length} lançamentos · Total filtrado: ${formatBRL(totalFiltrado)}</p>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <button onclick="abrirModalExtrato()" class="px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 hover-lift" style="background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0" title="Sobe o extrato do C6 e lança/baixa os pagamentos">🏦 Conferir extrato</button>
+          <button onclick="marcarRecorrentesEmMassa()" class="px-3 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 hover-lift" style="background:#fef3c7;color:#854d0e;border:1px solid #fcd34d" title="Marca em massa todas as despesas que se repetem (Condomínio, IPTU, etc) como recorrentes">⚙️ Marcar recorrentes</button>
+          <button onclick="gerarRecorrentesUI()" class="px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 hover-lift" style="background:#f5f1e8;color:#1a3a2a;border:1px solid #d4c5a0" title="Gera as despesas recorrentes pros próximos meses">🔄 Gerar meses</button>
+          <button onclick="abrirModalDespesa()" class="accent-bg text-amber-50 px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 hover-lift">${icons.plus} Lançar despesa</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="card rounded-xl p-6" style="background:linear-gradient(135deg,#8b3a3a,#a64453);color:#fdfbf6">
+          <div class="text-xs uppercase tracking-widest opacity-80 font-semibold mb-2">${temFiltroAtivo() ? 'Total filtrado' : 'Total do mês'} · ${rotuloFiltro(d)}</div>
+          <div class="titulo-serif text-4xl font-bold num-mono">${formatBRL(temFiltroAtivo() ? totalFiltrado : ind.totalDespesaMes)}</div>
+        </div>
+        <div class="card rounded-xl p-6">
+          <div class="text-xs uppercase tracking-widest text-stone-500 font-semibold mb-2">Acumulado do ano · ${d.anoAtual}</div>
+          <div class="titulo-serif text-4xl font-bold num-mono" style="color:#8b3a3a">${formatBRL(ind.totalDespesaAno)}</div>
+        </div>
+      </div>
+      ${renderFiltrosLanc(d)}
+      <div class="card rounded-xl overflow-hidden overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead style="background:#1a4d3a">
+            <tr>
+              <th class="text-left px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Imóvel</th>
+              <th class="text-left px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Tipo / Valor</th>
+              <th class="text-center px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Vencimento</th>
+              <th class="text-center px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Status</th>
+              <th class="px-4 py-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${despesasFiltradas.map((dx, idx) => `<tr class="${idx % 2 === 0 ? 'bg-amber-50/30' : ''}" style="border-bottom:1px solid #e8dfc9">
+              <td class="px-4 py-3 font-semibold" style="color:#1a3a2a">${escapeHtml(dx.imovel)}</td>
+              <td class="px-4 py-3">
+                <div class="text-stone-700 flex items-center gap-2 flex-wrap">${escapeHtml(dx.tipo)}
+                  ${dx.recorrente ? '<span class="pill" style="background:#e0e7ff;color:#3730a3;border:1px solid #a5b4fc" title="Despesa recorrente">🔄</span>' : ''}
+                  ${dx.pago_por === 'inquilino' ? '<span class="pill" style="background:#dbeafe;color:#1e3a5f;border:1px solid #93c5fd">🏠 Inquilino</span>' : '<span class="pill" style="background:#fef3c7;color:#854d0e;border:1px solid #fde68a">👤 Proprietário</span>'}
+                  ${dx.confirmar_valor ? '<span class="pill" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d;animation:pulse 2s infinite" title="Confirme o valor — gerada automaticamente">⚠️ Confirmar valor</span>' : ''}
+                </div>
+                <div class="num-mono font-bold text-base" style="color:#8b3a3a">${formatBRL(dx.valor)}</div>
+              </td>
+              <td class="px-4 py-3 text-center num-mono text-stone-600">${String(dx.dia_venc).padStart(2,'0')}/${String(dx.mes).padStart(2,'0')}/${dx.ano}</td>
+              <td class="px-4 py-3 text-center">
+                <button onclick="marcarPaga('${dx.id}','${dx.status}')" class="pill ${dx.status === 'pago' ? 'badge-pago' : 'badge-urgente'}">${dx.status === 'pago' ? icons.check + ' Pago' : 'Pendente'}</button>
+              </td>
+              <td class="px-4 py-3"><div class="flex gap-2 justify-end items-center">
+                <button onclick="abrirModalAnexos('despesa','${dx.id}','${escapeHtml(dx.tipo + ' - ' + dx.imovel)}')" class="p-1.5 rounded hover:bg-amber-100 text-xs flex items-center gap-1" title="Anexos" style="color:#5d4037">📎${state.anexosCount['despesa_' + dx.id] > 0 ? ' <span class="font-bold">' + state.anexosCount['despesa_' + dx.id] + '</span>' : ''}</button>
+                <button onclick="editarDespesa('${dx.id}')" class="p-1.5 rounded hover:bg-amber-100">${icons.edit}</button>
+                <button onclick="removerDespesa('${dx.id}')" class="p-1.5 rounded hover:bg-red-100 text-red-700">${icons.trash}</button>
+              </div></td>
+            </tr>`).join('')}
+            ${despesasFiltradas.length === 0 ? '<tr><td colspan="5" class="text-center p-8 text-stone-500 italic">Nenhuma despesa com esses filtros.</td></tr>' : ''}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>`;
+}
+
+function renderVencimentos(d) {
+  return `<main class="max-w-7xl mx-auto px-6 py-8">
+    <div class="space-y-6">
+      <div class="flex justify-between items-center flex-wrap gap-4">
+        <div>
+          <h2 class="titulo-serif text-3xl font-bold" style="color:#1a3a2a">Vencimentos</h2>
+          <p class="text-sm text-stone-500">Ordenados por urgência</p>
+        </div>
+        <button onclick="exportarCalendario()" class="accent-bg text-amber-50 px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 hover-lift">${icons.download} Exportar (.ics)</button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        ${d.proximosVencimentos.map(v => {
+          const status = v.diasRestantes < 0 ? 'vencido' : v.diasRestantes <= 7 ? 'urgente' : v.diasRestantes <= 30 ? 'proximo' : 'tranquilo';
+          const cores = { vencido:{borda:'#c62828',fundo:'#fee2e2',texto:'#991b1b'}, urgente:{borda:'#ea580c',fundo:'#fed7aa',texto:'#9a3412'}, proximo:{borda:'#ca8a04',fundo:'#fef3c7',texto:'#854d0e'}, tranquilo:{borda:'#16a34a',fundo:'#d1fae5',texto:'#065f46'} };
+          const c = cores[status];
+          const label = status === 'vencido' ? Math.abs(v.diasRestantes) + 'd atraso' : status === 'urgente' ? 'urgente' : status === 'proximo' ? 'próximo' : 'tranquilo';
+          return `<div class="card rounded-xl p-5 hover-lift border-l-4" style="border-left-color:${c.borda}">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex-1">
+                <div class="text-xs uppercase tracking-wider font-semibold text-stone-500">${escapeHtml(v.tipo)}</div>
+                <div class="font-semibold mt-0.5" style="color:#1a3a2a">${escapeHtml(v.imovel)}</div>
+              </div>
+              <span class="pill" style="background:${c.fundo};color:${c.texto}">${label}</span>
+            </div>
+            <div class="flex items-center justify-between mt-3 pt-3 border-t" style="border-color:#e8dfc9">
+              <div class="text-xs">
+                <div class="text-stone-500">Vencimento</div>
+                <div class="num-mono font-semibold" style="color:#1a3a2a">${v.dataVenc.toLocaleDateString('pt-BR')}</div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs text-stone-500">Valor</div>
+                <div class="num-mono font-bold text-lg" style="color:#8b3a3a">${formatBRL(v.valor)}</div>
+              </div>
+            </div>
+            <div class="flex gap-2 mt-3">
+              <button onclick="marcarPaga('${v.id}','${v.status}')" class="flex-1 py-2 text-xs font-semibold rounded-md hover:opacity-80" style="background:#1a4d3a;color:#fdfbf6">${icons.check} Marcar como pago</button>
+              <button onclick="abrirModalAnexos('despesa','${v.id}','${escapeHtml(v.tipo + ' - ' + v.imovel)}')" class="px-3 py-2 text-xs font-semibold rounded-md hover:opacity-80" style="background:#f5f1e8;color:#1a3a2a;border:1px solid #d4c5a0" title="Anexos">📎${state.anexosCount['despesa_' + v.id] > 0 ? ' ' + state.anexosCount['despesa_' + v.id] : ''}</button>
+            </div>
+          </div>`;
+        }).join('')}
+        ${d.proximosVencimentos.length === 0 ? '<div class="col-span-full card rounded-xl p-8 text-center"><div class="text-green-700 mx-auto mb-2" style="display:inline-block">'+icons.check+'</div><p class="titulo-serif text-xl" style="color:#1a3a2a">Sem vencimentos pendentes!</p></div>' : ''}
+      </div>
+    </div>
+  </main>`;
+}
+
+function renderGraficos(d) {
+  const top = [...d.resumoImoveis].sort((a,b) => b.resultadoMes - a.resultadoMes);
+  const max = Math.max(...top.map(x => Math.abs(x.resultadoMes)), 1);
+  return `<main class="max-w-7xl mx-auto px-6 py-8">
+    <div class="space-y-6">
+      <div>
+        <h2 class="titulo-serif text-3xl font-bold" style="color:#1a3a2a">Gráficos & Análises</h2>
+        <p class="text-sm text-stone-500">Visualização da performance · ${MESES[d.mesAtual-1]}/${d.anoAtual}</p>
+      </div>
+      <div class="card rounded-xl p-6">
+        <h3 class="titulo-serif text-xl font-bold mb-4" style="color:#1a3a2a">Rendimento por Imóvel (mês atual)</h3>
+        ${renderBarChart(d.resumoImoveis)}
+      </div>
+      <div class="card rounded-xl p-6">
+        <h3 class="titulo-serif text-xl font-bold mb-4" style="color:#1a3a2a">Top Imóveis (Resultado do Mês)</h3>
+        <div class="space-y-3">
+          ${top.map((r, i) => {
+            const pct = Math.abs(r.resultadoMes) / max * 100;
+            return `<div>
+              <div class="flex justify-between text-sm mb-1">
+                <span class="font-semibold" style="color:#1a3a2a">${i+1}. ${escapeHtml(r.nome)}</span>
+                <span class="num-mono font-bold" style="color:${r.resultadoMes >= 0 ? '#1a4d3a' : '#8b3a3a'}">${formatBRL(r.resultadoMes)}</span>
+              </div>
+              <div class="w-full h-2 rounded-full" style="background:#f5f1e8">
+                <div class="h-2 rounded-full" style="width:${pct}%;background:${r.resultadoMes >= 0 ? '#1a4d3a' : '#8b3a3a'}"></div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+  </main>`;
+}
+
+function renderBarChart(data) {
+  const w = 700, h = 320, padL = 50, padR = 20, padT = 20, padB = 80;
+  const chartW = w - padL - padR, chartH = h - padT - padB;
+  const allVals = data.flatMap(d => [d.receitaMes, d.despesaMes, d.resultadoMes]);
+  const maxV = Math.max(...allVals, 100);
+  const minV = Math.min(...allVals, 0);
+  const range = maxV - minV || 1;
+  const groupW = chartW / (data.length || 1);
+  const barW = groupW / 4;
+
+  const yScale = v => padT + chartH - ((v - minV) / range) * chartH;
+  const y0 = yScale(0);
+
+  const yTicks = 4;
+  const grid = Array.from({length: yTicks + 1}, (_, i) => {
+    const v = minV + (range * i / yTicks);
+    const y = yScale(v);
+    return `<line x1="${padL}" y1="${y}" x2="${w-padR}" y2="${y}" stroke="#e8dfc9" stroke-dasharray="3,3"/><text x="${padL-8}" y="${y+4}" text-anchor="end" font-size="10" fill="#5d4037">${(v/1000).toFixed(0)}k</text>`;
+  }).join('');
+
+  const bars = data.map((d, i) => {
+    const x0 = padL + i * groupW + groupW/2 - barW*1.5;
+    const renderBar = (val, offsetMul, color) => {
+      const y = yScale(Math.max(val, 0));
+      const height = Math.abs(yScale(val) - y0);
+      return `<rect x="${x0 + offsetMul*barW}" y="${val >= 0 ? y : y0}" width="${barW-2}" height="${height}" fill="${color}" rx="3"/>`;
+    };
+    const label = d.nome.length > 14 ? d.nome.substring(0, 14) + '…' : d.nome;
+    return renderBar(d.receitaMes, 0, '#1a4d3a') + renderBar(d.despesaMes, 1, '#8b3a3a') + renderBar(d.resultadoMes, 2, '#c19a4a') +
+      `<text x="${padL + i*groupW + groupW/2}" y="${h-padB+15}" text-anchor="middle" font-size="9" fill="#5d4037" transform="rotate(-15 ${padL + i*groupW + groupW/2} ${h-padB+15})">${escapeHtml(label)}</text>`;
+  }).join('');
+
+  return `<svg viewBox="0 0 ${w} ${h+30}" style="width:100%;height:auto" preserveAspectRatio="xMidYMid meet">
+    ${grid}
+    <line x1="${padL}" y1="${y0}" x2="${w-padR}" y2="${y0}" stroke="#5d4037" stroke-width="1"/>
+    ${bars}
+    <g transform="translate(${padL}, ${h+10})">
+      <rect x="0" y="0" width="12" height="12" fill="#1a4d3a" rx="2"/><text x="18" y="10" font-size="11" fill="#5d4037">Receita</text>
+      <rect x="80" y="0" width="12" height="12" fill="#8b3a3a" rx="2"/><text x="98" y="10" font-size="11" fill="#5d4037">Despesa</text>
+      <rect x="170" y="0" width="12" height="12" fill="#c19a4a" rx="2"/><text x="188" y="10" font-size="11" fill="#5d4037">Resultado</text>
+    </g>
+  </svg>`;
+}
+
+// === MODAIS ===
+function renderComparativo(d) {
+  const ind = d.indicadores;
+  const anoAtual = d.anoAtual;
+  const anoPassado = d.anoPassado;
+
+  // Por mês: receita/despesa do ano atual vs ano passado
+  const meses = MESES.map((mes, idx) => {
+    const m = idx + 1;
+    const recAtual = d.receitasAtivas.filter(r => r.mes === m && r.ano === anoAtual).reduce((s, r) => s + Number(r.valor), 0);
+    const despAtual = d.despesasAtivas.filter(x => x.mes === m && x.ano === anoAtual).reduce((s, x) => s + Number(x.valor), 0);
+    const recPas = d.receitasAtivas.filter(r => r.mes === m && r.ano === anoPassado).reduce((s, r) => s + Number(r.valor), 0);
+    const despPas = d.despesasAtivas.filter(x => x.mes === m && x.ano === anoPassado).reduce((s, x) => s + Number(x.valor), 0);
+    return { mes, recAtual, despAtual, recPas, despPas, resultAtual: recAtual - despAtual, resultPas: recPas - despPas };
+  });
+
+  const variacaoReceita = ind.totalReceitaAnoPassado > 0 ? ((ind.totalReceitaAno - ind.totalReceitaAnoPassado) / ind.totalReceitaAnoPassado * 100) : null;
+  const variacaoDespesa = ind.totalDespesaAnoPassado > 0 ? ((ind.totalDespesaAno - ind.totalDespesaAnoPassado) / ind.totalDespesaAnoPassado * 100) : null;
+  const resultadoAtual = ind.totalReceitaAno - ind.totalDespesaAno;
+  const resultadoPassado = ind.totalReceitaAnoPassado - ind.totalDespesaAnoPassado;
+
+  return `<main class="max-w-7xl mx-auto px-6 py-8">
+    <div class="space-y-6">
+      <div class="flex justify-between items-center flex-wrap gap-4">
+        <div>
+          <h2 class="titulo-serif text-3xl font-bold" style="color:#1a3a2a">Comparativo Ano a Ano</h2>
+          <p class="text-sm text-stone-500">${anoPassado} vs ${anoAtual}</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="exportarRelatorioCSV()" class="px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 hover-lift" style="background:#f5f1e8;color:#1a3a2a;border:1px solid #d4c5a0">${icons.download} Exportar Excel (.csv)</button>
+          <button onclick="exportarRelatorioPDF()" class="accent-bg text-amber-50 px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 hover-lift">${icons.download} Imprimir / PDF</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="card rounded-xl p-6">
+          <div class="text-xs uppercase tracking-widest text-stone-500 font-semibold mb-2">Receita</div>
+          <div class="num-mono text-2xl font-bold accent">${formatBRL(ind.totalReceitaAno)}</div>
+          <div class="text-xs text-stone-500 mt-1">vs ${formatBRL(ind.totalReceitaAnoPassado)} em ${anoPassado}</div>
+          ${variacaoReceita !== null ? `<div class="text-sm font-semibold mt-2" style="color:${variacaoReceita >= 0 ? '#16a34a' : '#c62828'}">${variacaoReceita >= 0 ? '▲' : '▼'} ${Math.abs(variacaoReceita).toFixed(1)}%</div>` : '<div class="text-xs text-stone-400 mt-2">sem dados de comparação</div>'}
+        </div>
+        <div class="card rounded-xl p-6">
+          <div class="text-xs uppercase tracking-widest text-stone-500 font-semibold mb-2">Despesas</div>
+          <div class="num-mono text-2xl font-bold" style="color:#8b3a3a">${formatBRL(ind.totalDespesaAno)}</div>
+          <div class="text-xs text-stone-500 mt-1">vs ${formatBRL(ind.totalDespesaAnoPassado)} em ${anoPassado}</div>
+          ${variacaoDespesa !== null ? `<div class="text-sm font-semibold mt-2" style="color:${variacaoDespesa >= 0 ? '#c62828' : '#16a34a'}">${variacaoDespesa >= 0 ? '▲' : '▼'} ${Math.abs(variacaoDespesa).toFixed(1)}%</div>` : '<div class="text-xs text-stone-400 mt-2">sem dados de comparação</div>'}
+        </div>
+        <div class="card rounded-xl p-6" style="background:${resultadoAtual >= 0 ? 'linear-gradient(135deg,#1a4d3a,#2e6b52)' : 'linear-gradient(135deg,#8b3a3a,#a64453)'};color:#fdfbf6">
+          <div class="text-xs uppercase tracking-widest opacity-80 font-semibold mb-2">Resultado</div>
+          <div class="num-mono text-2xl font-bold">${formatBRL(resultadoAtual)}</div>
+          <div class="text-xs opacity-80 mt-1">vs ${formatBRL(resultadoPassado)} em ${anoPassado}</div>
+        </div>
+      </div>
+
+      <div class="card rounded-xl overflow-hidden overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead style="background:#1a4d3a">
+            <tr>
+              <th class="text-left px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Mês</th>
+              <th class="text-right px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Receita ${anoPassado}</th>
+              <th class="text-right px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Receita ${anoAtual}</th>
+              <th class="text-right px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Despesa ${anoPassado}</th>
+              <th class="text-right px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Despesa ${anoAtual}</th>
+              <th class="text-right px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Result. ${anoPassado}</th>
+              <th class="text-right px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Result. ${anoAtual}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${meses.map((m, idx) => `<tr class="${idx % 2 === 0 ? 'bg-amber-50/30' : ''}" style="border-bottom:1px solid #e8dfc9">
+              <td class="px-4 py-3 font-semibold" style="color:#1a3a2a">${m.mes}</td>
+              <td class="px-4 py-3 text-right num-mono ${m.recPas > 0 ? 'text-stone-700' : 'text-stone-300'}">${m.recPas > 0 ? formatBRL(m.recPas) : '—'}</td>
+              <td class="px-4 py-3 text-right num-mono ${m.recAtual > 0 ? 'accent font-semibold' : 'text-stone-300'}">${m.recAtual > 0 ? formatBRL(m.recAtual) : '—'}</td>
+              <td class="px-4 py-3 text-right num-mono ${m.despPas > 0 ? 'text-stone-700' : 'text-stone-300'}">${m.despPas > 0 ? formatBRL(m.despPas) : '—'}</td>
+              <td class="px-4 py-3 text-right num-mono ${m.despAtual > 0 ? '' : 'text-stone-300'}" style="${m.despAtual > 0 ? 'color:#8b3a3a' : ''}">${m.despAtual > 0 ? formatBRL(m.despAtual) : '—'}</td>
+              <td class="px-4 py-3 text-right num-mono ${m.resultPas !== 0 ? 'font-semibold' : 'text-stone-300'}" style="${m.resultPas !== 0 ? `color:${m.resultPas >= 0 ? '#1a4d3a' : '#8b3a3a'}` : ''}">${m.resultPas !== 0 ? formatBRL(m.resultPas) : '—'}</td>
+              <td class="px-4 py-3 text-right num-mono ${m.resultAtual !== 0 ? 'font-bold' : 'text-stone-300'}" style="${m.resultAtual !== 0 ? `color:${m.resultAtual >= 0 ? '#1a4d3a' : '#8b3a3a'}` : ''}">${m.resultAtual !== 0 ? formatBRL(m.resultAtual) : '—'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <div class="flex items-baseline justify-between mb-4">
+          <h3 class="titulo-serif text-2xl font-bold" style="color:#1a3a2a">Margem operacional por imóvel</h3>
+          <span class="text-xs uppercase tracking-widest text-stone-500 font-semibold">${anoAtual}</span>
+        </div>
+        <div class="card rounded-xl overflow-hidden overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead style="background:#1a4d3a">
+              <tr>
+                <th class="text-left px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Imóvel</th>
+                <th class="text-right px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Receita</th>
+                <th class="text-right px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Despesa</th>
+                <th class="text-right px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Resultado</th>
+                <th class="text-right px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">Margem %</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${[...d.resumoImoveis].sort((a, b) => (b.margemAno || -999) - (a.margemAno || -999)).map((r, idx) => `<tr class="${idx % 2 === 0 ? 'bg-amber-50/30' : ''}" style="border-bottom:1px solid #e8dfc9">
+                <td class="px-4 py-3 font-semibold" style="color:#1a3a2a">${escapeHtml(r.nome)}</td>
+                <td class="px-4 py-3 text-right num-mono accent">${formatBRL(r.receitaAno)}</td>
+                <td class="px-4 py-3 text-right num-mono" style="color:#8b3a3a">${formatBRL(r.despesaAno)}</td>
+                <td class="px-4 py-3 text-right num-mono font-bold" style="color:${r.resultadoAno >= 0 ? '#1a4d3a' : '#8b3a3a'}">${formatBRL(r.resultadoAno)}</td>
+                <td class="px-4 py-3 text-right num-mono font-bold" style="color:${r.margemAno === null ? '#94a3b8' : r.margemAno >= 50 ? '#16a34a' : r.margemAno >= 0 ? '#ca8a04' : '#c62828'}">${r.margemAno !== null ? r.margemAno.toFixed(1) + '%' : '—'}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>`;
+}
+
+function renderModalGerarRecorrentes() {
+  const m = state.modalGerarRecorrentes;
+  const mesAtual = HOJE.getMonth() + 1;
+  const anoAtual = HOJE.getFullYear();
+
+  // Achar despesas recorrentes únicas (por imóvel+tipo, mantendo a mais recente)
+  const recorrentes = state.despesas.filter(d => d.recorrente);
+  const baseUnica = {};
+  for (const r of recorrentes) {
+    const key = `${r.imovel}||${r.tipo}`;
+    const existente = baseUnica[key];
+    if (!existente || (r.ano > existente.ano) || (r.ano === existente.ano && r.mes > existente.mes)) {
+      baseUnica[key] = r;
+    }
+  }
+  const basesPraGerar = Object.values(baseUnica);
+
+  // Mes/ano alvo (default: dezembro do ano atual)
+  const mesAlvo = m.mesAlvo || 12;
+  const anoAlvo = m.anoAlvo || anoAtual;
+
+  // Calcular quantos meses serão gerados
+  let totalMeses = 0;
+  let mAtual = mesAtual, aAtual = anoAtual;
+  while ((aAtual < anoAlvo) || (aAtual === anoAlvo && mAtual <= mesAlvo)) {
+    totalMeses++;
+    mAtual++;
+    if (mAtual > 12) { mAtual = 1; aAtual++; }
+  }
+  const totalEstimado = totalMeses * basesPraGerar.length;
+
+  return `<div class="fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4" onclick="if(event.target===this)fecharModalGerarRecorrentes()">
+    <div class="card rounded-xl max-w-xl w-full max-h-[90vh] overflow-y-auto" style="background:#fdfbf6">
+      <div class="flex justify-between items-start p-6 border-b" style="border-color:#e8dfc9">
+        <div>
+          <h3 class="titulo-serif text-2xl font-bold" style="color:#1a3a2a">🔄 Gerar Despesas Recorrentes</h3>
+          <p class="text-sm text-stone-500 mt-1">Cria automaticamente as despesas que se repetem todo mês</p>
+        </div>
+        <button onclick="fecharModalGerarRecorrentes()">${icons.x}</button>
+      </div>
+
+      <div class="p-6 space-y-5">
+        ${basesPraGerar.length === 0 ? `
+          <div class="rounded-lg p-5 text-center" style="background:#fef3c7;border:1px solid #fcd34d">
+            <div class="text-3xl mb-2">⚠️</div>
+            <p class="text-sm font-semibold" style="color:#92400e">Nenhuma despesa marcada como recorrente</p>
+            <p class="text-xs text-stone-600 mt-2">Pra usar essa função, primeiro edite uma despesa (Condomínio, IPTU, Carnê Leão...) e marque o checkbox <strong>"🔄 Despesa recorrente (todo mês)"</strong>.</p>
+          </div>
+        ` : `
+          <div>
+            <div class="text-xs uppercase tracking-wider font-semibold mb-2" style="color:#5d4037">Despesas que vão ser geradas (${basesPraGerar.length})</div>
+            <div class="rounded-lg p-3 space-y-1.5" style="background:#f5f1e8;border:1px solid #e8dfc9;max-height:200px;overflow-y:auto">
+              ${basesPraGerar.map(r => `<div class="flex items-center justify-between text-sm">
+                <span class="font-semibold" style="color:#1a3a2a">${escapeHtml(r.tipo)}</span>
+                <span class="text-stone-600 text-xs">${escapeHtml(r.imovel)} · dia ${r.dia_venc} · ${formatBRL(r.valor)}</span>
+              </div>`).join('')}
+            </div>
+            <p class="text-xs text-stone-500 mt-2">💡 O valor vai ser herdado do último lançamento de cada despesa. Você confirma/ajusta depois.</p>
+          </div>
+
+          <div>
+            <div class="text-xs uppercase tracking-wider font-semibold mb-2" style="color:#5d4037">Gerar de ${MESES[mesAtual-1]}/${anoAtual} até:</div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-stone-600 mb-1">Mês final</label>
+                <select id="gr-mes" class="input" onchange="atualizarPreviewGerar()">
+                  ${MESES.map((m, i) => `<option value="${i+1}" ${(i+1) === mesAlvo ? 'selected' : ''}>${m}</option>`).join('')}
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-stone-600 mb-1">Ano final</label>
+                <select id="gr-ano" class="input" onchange="atualizarPreviewGerar()">
+                  ${[anoAtual, anoAtual + 1, anoAtual + 2].map(a => `<option value="${a}" ${a === anoAlvo ? 'selected' : ''}>${a}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-lg p-4" style="background:linear-gradient(135deg,#1a4d3a,#2e6b52);color:#fdfbf6">
+            <div class="text-xs uppercase tracking-widest opacity-80 font-semibold mb-1">Preview</div>
+            <div class="num-mono text-lg font-bold">${totalMeses} mes(es) × ${basesPraGerar.length} despesa(s) = até ${totalEstimado} lançamento(s)</div>
+            <div class="text-xs opacity-80 mt-1">Despesas que já existem serão ignoradas. Só cria novas.</div>
+          </div>
+        `}
+      </div>
+
+      <div class="flex justify-end gap-3 p-6 border-t" style="border-color:#e8dfc9">
+        <button onclick="fecharModalGerarRecorrentes()" class="px-5 py-2 rounded-md text-sm font-semibold text-stone-700 hover:bg-stone-100">Cancelar</button>
+        ${basesPraGerar.length > 0 ? `<button onclick="confirmarGerarRecorrentes()" class="px-5 py-2 rounded-md text-sm font-semibold text-amber-50" style="background:#1a4d3a">🔄 Gerar Despesas</button>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderModalDocumentos() {
+  const m = state.modalDocumentos;
+  const catAtiva = m.categoriaAtiva || 'matricula';
+  const key = `doc_${m.imovelId}_${catAtiva}`;
+  const anexos = state.anexosCache[key] || [];
+  const carregando = !state.anexosCache.hasOwnProperty(key);
+
+  const iconArquivo = (nome) => {
+    const ext = nome.split('.').pop().toLowerCase();
+    if (['pdf'].includes(ext)) return '📄';
+    if (['jpg','jpeg','png','heic','webp','gif'].includes(ext)) return '🖼️';
+    if (['doc','docx'].includes(ext)) return '📝';
+    if (['xls','xlsx','csv'].includes(ext)) return '📊';
+    return '📎';
+  };
+
+  const nomeAmigavel = (nome) => {
+    const m2 = nome.match(/^\d+_(.+)$/);
+    return m2 ? m2[1].replace(/_/g, ' ') : nome;
+  };
+
+  return `<div class="fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4" onclick="if(event.target===this)fecharModalDocumentos()">
+    <div class="card rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" style="background:#fdfbf6">
+      <div class="flex justify-between items-start p-6 border-b" style="border-color:#e8dfc9">
+        <div>
+          <h3 class="titulo-serif text-2xl font-bold" style="color:#1a3a2a">📁 Documentos</h3>
+          <p class="text-sm text-stone-500 mt-1">${escapeHtml(m.imovelNome)}</p>
+        </div>
+        <button onclick="fecharModalDocumentos()">${icons.x}</button>
+      </div>
+
+      <!-- Abas de categorias -->
+      <div class="border-b overflow-x-auto" style="border-color:#e8dfc9;background:#f5f1e8">
+        <div class="flex gap-1 px-6 py-2" style="min-width:max-content">
+          ${CATEGORIAS_DOC.map(c => {
+            const countKey = `doc_${m.imovelId}_${c.id}`;
+            const count = state.anexosCount[countKey] || 0;
+            const ativa = c.id === catAtiva;
+            return `<button onclick="selecionarCategoriaDoc('${c.id}')" class="px-4 py-2 text-sm font-semibold rounded-t-lg whitespace-nowrap ${ativa ? 'accent-bg' : 'hover:bg-amber-100'}" style="${ativa ? 'color:#fdfbf6' : 'color:#5d4037;background:transparent'}">${c.icone} ${c.nome}${count > 0 ? ' <span class="ml-1 px-2 py-0.5 rounded-full text-xs" style="background:' + (ativa ? 'rgba(255,255,255,0.3)' : '#d4c5a0') + '">' + count + '</span>' : ''}</button>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="p-6 space-y-4">
+        ${carregando ? `<div class="text-center py-8"><div class="accent">${icons.loader}</div><p class="text-sm text-stone-500 mt-2">Carregando documentos...</p></div>` : ''}
+
+        ${!carregando && anexos.length > 0 ? `
+          <div class="space-y-2">
+            ${anexos.map(a => `<div class="flex items-center gap-3 p-3 rounded-lg" style="background:#f5f1e8;border:1px solid #e8dfc9">
+              <div class="text-2xl">${iconArquivo(a.nome)}</div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-semibold truncate" style="color:#1a3a2a">${escapeHtml(nomeAmigavel(a.nome))}</div>
+              </div>
+              <a href="${escapeHtml(a.url)}" target="_blank" rel="noopener" class="px-3 py-1.5 rounded text-xs font-semibold accent-bg text-amber-50 hover:opacity-80">Abrir</a>
+              <a href="${escapeHtml(a.url)}" download="${escapeHtml(nomeAmigavel(a.nome))}" class="px-3 py-1.5 rounded text-xs font-semibold" style="background:#f5f1e8;color:#1a3a2a;border:1px solid #d4c5a0">Baixar</a>
+              <button onclick="deletarDocumentoUI('${m.imovelId}','${catAtiva}','${escapeHtml(a.fullPath)}')" class="p-1.5 rounded hover:bg-red-100 text-red-700" title="Apagar">${icons.trash}</button>
+            </div>`).join('')}
+          </div>
+        ` : ''}
+
+        ${!carregando && anexos.length === 0 ? `
+          <div class="text-center py-8 text-stone-400">
+            <div class="text-5xl mb-2">${CATEGORIAS_DOC.find(c => c.id === catAtiva).icone}</div>
+            <p class="text-sm">Nenhum documento nesta categoria ainda.</p>
+          </div>
+        ` : ''}
+
+        <div class="rounded-lg p-6 text-center" style="background:#f5f1e8;border:2px dashed #d4c5a0">
+          ${state.uploadProgresso ? `
+            <div class="accent">${icons.loader}</div>
+            <p class="text-sm text-stone-700 mt-2">Enviando arquivo...</p>
+          ` : `
+            <div class="text-3xl mb-2">📤</div>
+            <p class="text-sm text-stone-700 mb-3">Adicionar documento em <strong>${CATEGORIAS_DOC.find(c => c.id === catAtiva).nome}</strong></p>
+            <input type="file" id="doc-input" class="hidden" onchange="onDocumentoSelecionado(event,'${m.imovelId}','${catAtiva}')"/>
+            <button onclick="document.getElementById('doc-input').click()" class="accent-bg px-4 py-2 rounded-md text-sm font-semibold text-amber-50 hover:opacity-80">+ Escolher arquivo</button>
+            <p class="text-xs text-stone-500 mt-2">PDF, foto, qualquer arquivo até 10MB</p>
+          `}
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 p-6 border-t" style="border-color:#e8dfc9">
+        <button onclick="fecharModalDocumentos()" class="px-5 py-2 rounded-md text-sm font-semibold accent-bg text-amber-50">Fechar</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderModalAnexos() {
+  const m = state.modalAnexos;
+  const key = `${m.tipo}_${m.id}`;
+  const anexos = state.anexosCache[key] || [];
+  const carregando = !state.anexosCache.hasOwnProperty(key);
+
+  // Helper: ícone por tipo de arquivo
+  const iconArquivo = (nome) => {
+    const ext = nome.split('.').pop().toLowerCase();
+    if (['pdf'].includes(ext)) return '📄';
+    if (['jpg','jpeg','png','heic','webp','gif'].includes(ext)) return '🖼️';
+    if (['doc','docx'].includes(ext)) return '📝';
+    if (['xls','xlsx','csv'].includes(ext)) return '📊';
+    return '📎';
+  };
+
+  // Nome amigável: tira o timestamp do começo
+  const nomeAmigavel = (nome) => {
+    const m2 = nome.match(/^\d+_(.+)$/);
+    return m2 ? m2[1].replace(/_/g, ' ') : nome;
+  };
+
+  return `<div class="fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4" onclick="if(event.target===this)fecharModalAnexos()">
+    <div class="card rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" style="background:#fdfbf6">
+      <div class="flex justify-between items-start p-6 border-b" style="border-color:#e8dfc9">
+        <div>
+          <h3 class="titulo-serif text-2xl font-bold" style="color:#1a3a2a">📎 Anexos</h3>
+          <p class="text-sm text-stone-500 mt-1">${escapeHtml(m.nome)}</p>
+        </div>
+        <button onclick="fecharModalAnexos()">${icons.x}</button>
+      </div>
+      <div class="p-6 space-y-4">
+        ${carregando ? `<div class="text-center py-8"><div class="accent">${icons.loader}</div><p class="text-sm text-stone-500 mt-2">Carregando anexos...</p></div>` : ''}
+
+        ${!carregando && anexos.length > 0 ? `
+          <div class="space-y-2">
+            ${anexos.map(a => `<div class="flex items-center gap-3 p-3 rounded-lg" style="background:#f5f1e8;border:1px solid #e8dfc9">
+              <div class="text-2xl">${iconArquivo(a.nome)}</div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-semibold truncate" style="color:#1a3a2a">${escapeHtml(nomeAmigavel(a.nome))}</div>
+              </div>
+              <a href="${escapeHtml(a.url)}" target="_blank" rel="noopener" class="px-3 py-1.5 rounded text-xs font-semibold accent-bg text-amber-50 hover:opacity-80">Abrir</a>
+              <a href="${escapeHtml(a.url)}" download="${escapeHtml(nomeAmigavel(a.nome))}" class="px-3 py-1.5 rounded text-xs font-semibold" style="background:#f5f1e8;color:#1a3a2a;border:1px solid #d4c5a0">Baixar</a>
+              <button onclick="deletarAnexoUI('${m.tipo}','${m.id}','${escapeHtml(a.fullPath)}')" class="p-1.5 rounded hover:bg-red-100 text-red-700" title="Apagar">${icons.trash}</button>
+            </div>`).join('')}
+          </div>
+        ` : ''}
+
+        ${!carregando && anexos.length === 0 ? `
+          <div class="text-center py-8 text-stone-400">
+            <div class="text-5xl mb-2">📎</div>
+            <p class="text-sm">Nenhum anexo ainda. Adicione boletos, comprovantes, notas fiscais...</p>
+          </div>
+        ` : ''}
+
+        <div class="rounded-lg p-6 text-center" style="background:#f5f1e8;border:2px dashed #d4c5a0">
+          ${state.uploadProgresso ? `
+            <div class="accent">${icons.loader}</div>
+            <p class="text-sm text-stone-700 mt-2">Enviando arquivo...</p>
+          ` : `
+            <div class="text-3xl mb-2">📤</div>
+            <p class="text-sm text-stone-700 mb-3">Clique abaixo ou arraste um arquivo aqui</p>
+            <input type="file" id="anexo-input" class="hidden" onchange="onAnexoSelecionado(event,'${m.tipo}','${m.id}')"/>
+            <button onclick="document.getElementById('anexo-input').click()" class="accent-bg px-4 py-2 rounded-md text-sm font-semibold text-amber-50 hover:opacity-80">+ Escolher arquivo</button>
+            <p class="text-xs text-stone-500 mt-2">PDF, foto, qualquer arquivo até 10MB</p>
+          `}
+        </div>
+      </div>
+      <div class="flex justify-end gap-3 p-6 border-t" style="border-color:#e8dfc9">
+        <button onclick="fecharModalAnexos()" class="px-5 py-2 rounded-md text-sm font-semibold accent-bg text-amber-50">Fechar</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderModalDetalheImovel(d) {
+  const nome = state.modalDetalheImovel;
+  const im = d.resumoImoveis.find(r => r.nome === nome);
+  if (!im) { state.modalDetalheImovel = null; return ''; }
+  const imOriginal = state.imoveis.find(i => i.nome === nome);
+
+  // Filtrar lançamentos
+  const recsIm = d.receitasAtivas.filter(r => r.imovel === nome);
+  const despsIm = d.despesasAtivas.filter(x => x.imovel === nome);
+
+  // Histórico mensal
+  const porMes = {};
+  recsIm.forEach(r => {
+    const k = `${r.ano}-${String(r.mes).padStart(2,'0')}`;
+    if (!porMes[k]) porMes[k] = { ano: r.ano, mes: r.mes, receita: 0, despesa: 0 };
+    porMes[k].receita += Number(r.valor);
+  });
+  despsIm.forEach(x => {
+    const k = `${x.ano}-${String(x.mes).padStart(2,'0')}`;
+    if (!porMes[k]) porMes[k] = { ano: x.ano, mes: x.mes, receita: 0, despesa: 0 };
+    porMes[k].despesa += Number(x.valor);
+  });
+  const mesesOrd = Object.values(porMes).sort((a, b) => (b.ano - a.ano) || (b.mes - a.mes));
+
+  // Por tipo de despesa
+  const porTipo = {};
+  despsIm.forEach(x => {
+    porTipo[x.tipo] = (porTipo[x.tipo] || 0) + Number(x.valor);
+  });
+  const tiposOrd = Object.entries(porTipo).sort((a, b) => b[1] - a[1]);
+
+  // Últimas despesas
+  const ultDesp = [...despsIm].sort((a, b) => (b.ano - a.ano) || (b.mes - a.mes) || (b.dia_venc - a.dia_venc)).slice(0, 15);
+
+  return `<div class="fixed inset-0 modal-overlay z-50 flex items-start justify-center p-4 overflow-y-auto" onclick="if(event.target===this)fecharDetalheImovel()">
+    <div class="card rounded-xl max-w-5xl w-full my-8" style="background:#fdfbf6">
+      <div class="flex justify-between items-start p-6 border-b sticky top-0 z-10" style="border-color:#e8dfc9;background:#fdfbf6">
+        <div>
+          <div class="flex items-center gap-3 mb-1 flex-wrap">
+            <h3 class="titulo-serif text-3xl font-bold" style="color:#1a3a2a">${escapeHtml(im.nome)}</h3>
+            <span class="pill" style="background:${im.status === 'ativo' ? '#d1fae5' : im.status === 'vago' ? '#fee2e2' : '#fef3c7'};color:${im.status === 'ativo' ? '#065f46' : im.status === 'vago' ? '#991b1b' : '#854d0e'}">${escapeHtml(im.status)}</span>
+          </div>
+          ${im.endereco ? `<p class="text-sm text-stone-500">${escapeHtml(im.endereco)}</p>` : ''}
+          ${im.inquilino ? `<p class="text-xs text-stone-500 mt-1">👤 Inquilino: ${escapeHtml(im.inquilino)}</p>` : ''}
+          ${im.aluguel ? `<p class="text-xs mt-1" style="color:#1a4d3a">💰 Aluguel cadastrado: ${formatBRL(im.aluguel)} · vence dia ${im.dia_vencimento || 5}</p>` : ''}
+        </div>
+        <button onclick="fecharDetalheImovel()">${icons.x}</button>
+      </div>
+
+      <div class="p-6 space-y-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="rounded-lg p-4" style="background:#f5f1e8">
+            <div class="text-xs uppercase tracking-wider font-semibold" style="color:#5d4037">Receita ${d.anoAtual}</div>
+            <div class="num-mono text-xl font-bold mt-1 accent">${formatBRL(im.receitaAno)}</div>
+            <div class="text-xs text-stone-500 mt-1">Mês: ${formatBRL(im.receitaMes)}</div>
+          </div>
+          <div class="rounded-lg p-4" style="background:#f5f1e8">
+            <div class="text-xs uppercase tracking-wider font-semibold" style="color:#5d4037">Despesa ${d.anoAtual}</div>
+            <div class="num-mono text-xl font-bold mt-1" style="color:#8b3a3a">${formatBRL(im.despesaAno)}</div>
+            <div class="text-xs text-stone-500 mt-1">Mês: ${formatBRL(im.despesaMes)}</div>
+          </div>
+          <div class="rounded-lg p-4" style="background:linear-gradient(135deg,#1a4d3a,#2e6b52);color:#fdfbf6">
+            <div class="text-xs uppercase tracking-wider opacity-80 font-semibold">Resultado ${d.anoAtual}</div>
+            <div class="num-mono text-xl font-bold mt-1">${formatBRL(im.resultadoAno)}</div>
+            <div class="text-xs opacity-80 mt-1">Mês: ${formatBRL(im.resultadoMes)}</div>
+          </div>
+          <div class="rounded-lg p-4" style="background:#f5f1e8">
+            <div class="text-xs uppercase tracking-wider font-semibold" style="color:#5d4037">Margem operacional</div>
+            <div class="num-mono text-xl font-bold mt-1" style="color:${im.margemAno === null ? '#94a3b8' : im.margemAno >= 50 ? '#16a34a' : im.margemAno >= 0 ? '#ca8a04' : '#c62828'}">${im.margemAno !== null ? im.margemAno.toFixed(1) + '%' : '—'}</div>
+            <div class="text-xs text-stone-500 mt-1">do ano ${d.anoAtual}</div>
+          </div>
+        </div>
+
+        ${tiposOrd.length > 0 ? `
+        <div>
+          <h4 class="titulo-serif text-xl font-bold mb-3" style="color:#1a3a2a">Despesas por Tipo</h4>
+          <div class="card rounded-xl p-4">
+            <div class="space-y-2">
+              ${tiposOrd.map(([tipo, val]) => {
+                const max = Math.max(...tiposOrd.map(x => x[1]), 1);
+                const pct = val / max * 100;
+                return `<div>
+                  <div class="flex justify-between text-sm mb-1">
+                    <span class="font-semibold" style="color:#1a3a2a">${escapeHtml(tipo)}</span>
+                    <span class="num-mono font-bold" style="color:#8b3a3a">${formatBRL(val)}</span>
+                  </div>
+                  <div class="w-full h-1.5 rounded-full" style="background:#f5f1e8">
+                    <div class="h-1.5 rounded-full" style="width:${pct}%;background:#8b3a3a"></div>
+                  </div>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+        ` : ''}
+
+        <div>
+          <h4 class="titulo-serif text-xl font-bold mb-3" style="color:#1a3a2a">Histórico Mensal</h4>
+          <div class="card rounded-xl overflow-hidden overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead style="background:#1a4d3a">
+                <tr>
+                  <th class="text-left px-4 py-2 text-xs uppercase tracking-wider font-semibold text-amber-50">Mês/Ano</th>
+                  <th class="text-right px-4 py-2 text-xs uppercase tracking-wider font-semibold text-amber-50">Receita</th>
+                  <th class="text-right px-4 py-2 text-xs uppercase tracking-wider font-semibold text-amber-50">Despesa</th>
+                  <th class="text-right px-4 py-2 text-xs uppercase tracking-wider font-semibold text-amber-50">Resultado</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${mesesOrd.map((m, idx) => {
+                  const result = m.receita - m.despesa;
+                  return `<tr class="${idx % 2 === 0 ? 'bg-amber-50/30' : ''}" style="border-bottom:1px solid #e8dfc9">
+                    <td class="px-4 py-2 font-semibold" style="color:#1a3a2a">${MESES[m.mes-1]}/${m.ano}</td>
+                    <td class="px-4 py-2 text-right num-mono ${m.receita > 0 ? 'accent font-semibold' : 'text-stone-300'}">${m.receita > 0 ? formatBRL(m.receita) : '—'}</td>
+                    <td class="px-4 py-2 text-right num-mono ${m.despesa > 0 ? '' : 'text-stone-300'}" style="${m.despesa > 0 ? 'color:#8b3a3a' : ''}">${m.despesa > 0 ? formatBRL(m.despesa) : '—'}</td>
+                    <td class="px-4 py-2 text-right num-mono font-bold" style="color:${result >= 0 ? '#1a4d3a' : '#8b3a3a'}">${formatBRL(result)}</td>
+                  </tr>`;
+                }).join('')}
+                ${mesesOrd.length === 0 ? '<tr><td colspan="4" class="text-center p-6 text-stone-500 italic">Sem lançamentos ainda.</td></tr>' : ''}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        ${ultDesp.length > 0 ? `
+        <div>
+          <h4 class="titulo-serif text-xl font-bold mb-3" style="color:#1a3a2a">Últimas Despesas</h4>
+          <div class="card rounded-xl overflow-hidden overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead style="background:#1a4d3a">
+                <tr>
+                  <th class="text-left px-4 py-2 text-xs uppercase tracking-wider font-semibold text-amber-50">Tipo</th>
+                  <th class="text-center px-4 py-2 text-xs uppercase tracking-wider font-semibold text-amber-50">Vencimento</th>
+                  <th class="text-right px-4 py-2 text-xs uppercase tracking-wider font-semibold text-amber-50">Valor</th>
+                  <th class="text-center px-4 py-2 text-xs uppercase tracking-wider font-semibold text-amber-50">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${ultDesp.map((x, idx) => `<tr class="${idx % 2 === 0 ? 'bg-amber-50/30' : ''}" style="border-bottom:1px solid #e8dfc9">
+                  <td class="px-4 py-2" style="color:#1a3a2a">${escapeHtml(x.tipo)} ${x.pago_por === 'inquilino' ? '<span class="pill" style="background:#dbeafe;color:#1e3a5f;border:1px solid #93c5fd;margin-left:4px">🏠 Inquilino</span>' : ''}</td>
+                  <td class="px-4 py-2 text-center num-mono">${String(x.dia_venc).padStart(2,'0')}/${String(x.mes).padStart(2,'0')}/${x.ano}</td>
+                  <td class="px-4 py-2 text-right num-mono font-semibold" style="color:#8b3a3a">${formatBRL(x.valor)}</td>
+                  <td class="px-4 py-2 text-center"><span class="pill ${x.status === 'pago' ? 'badge-pago' : 'badge-urgente'}">${x.status}</span></td>
+                </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        ` : ''}
+      </div>
+
+      <div class="flex justify-between items-center gap-3 p-6 border-t flex-wrap" style="border-color:#e8dfc9">
+        <div class="flex gap-2 flex-wrap">
+          <button onclick="fecharDetalheImovel(); editarImovel('${imOriginal ? imOriginal.id : ''}')" class="px-5 py-2 rounded-md text-sm font-semibold" style="background:#f5f1e8;color:#1a3a2a">${icons.edit} Editar imóvel</button>
+          ${imOriginal ? `<button onclick="fecharDetalheImovel(); abrirModalDocumentos('${imOriginal.id}','${escapeHtml(imOriginal.nome)}')" class="px-5 py-2 rounded-md text-sm font-semibold" style="background:#f5f1e8;color:#1a3a2a;border:1px solid #d4c5a0">📁 Documentos${totalDocsImovel(imOriginal.id) > 0 ? ' (' + totalDocsImovel(imOriginal.id) + ')' : ''}</button>` : ''}
+        </div>
+        <button onclick="fecharDetalheImovel()" class="px-5 py-2 rounded-md text-sm font-semibold text-amber-50 accent-bg">Fechar</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderModalImovel() {
+  const im = state.modalImovel;
+  return `<div class="fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4" onclick="if(event.target===this)fecharModais()">
+    <div class="card rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" style="background:#fdfbf6">
+      <div class="flex justify-between items-center p-6 border-b" style="border-color:#e8dfc9">
+        <h3 class="titulo-serif text-2xl font-bold" style="color:#1a3a2a">${im.id ? 'Editar imóvel' : 'Novo imóvel'}</h3>
+        <button onclick="fecharModais()">${icons.x}</button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          ${field('Nome do imóvel', `<input id="im-nome" class="input" value="${escapeHtml(im.nome || '')}"/>`)}
+          ${field('Tipo', `<select id="im-tipo" class="input"><option value="PF" ${im.tipo === 'PF' ? 'selected' : ''}>Pessoa Física</option><option value="PJ" ${im.tipo === 'PJ' ? 'selected' : ''}>Pessoa Jurídica</option></select>`)}
+        </div>
+        ${field('Endereço', `<input id="im-endereco" class="input" value="${escapeHtml(im.endereco || '')}"/>`)}
+        ${field('Inquilino (opcional)', `<input id="im-inquilino" class="input" value="${escapeHtml(im.inquilino || '')}"/>`)}
+        <div class="grid grid-cols-3 gap-4">
+          ${field('Aluguel (R$)', `<input id="im-aluguel" type="number" step="0.01" class="input" value="${im.aluguel || 0}"/>`)}
+          ${field('Condomínio (R$)', `<input id="im-condominio" type="number" step="0.01" class="input" value="${im.condominio || 0}"/>`)}
+          ${field('Quem paga cond.', `<select id="im-cond_pago" class="input"><option value="proprietario" ${im.condominio_pago_por === 'proprietario' ? 'selected' : ''}>Proprietário</option><option value="inquilino" ${im.condominio_pago_por === 'inquilino' ? 'selected' : ''}>Inquilino</option></select>`)}
+        </div>
+        <div class="grid grid-cols-3 gap-4">
+          ${field('IPTU mensal (R$)', `<input id="im-iptu" type="number" step="0.01" class="input" value="${im.iptu || 0}"/>`)}
+          ${field('Quem paga IPTU', `<select id="im-iptu_pago" class="input"><option value="proprietario" ${im.iptu_pago_por === 'proprietario' ? 'selected' : ''}>Proprietário</option><option value="inquilino" ${im.iptu_pago_por === 'inquilino' ? 'selected' : ''}>Inquilino</option></select>`)}
+          ${field('Taxa ADM (R$)', `<input id="im-taxa" type="number" step="0.01" class="input" value="${im.taxa_adm || 0}"/>`)}
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          ${field('Dia do vencimento', `<input id="im-dia" type="number" min="1" max="31" class="input" value="${im.dia_vencimento || 5}"/>`)}
+          ${field('Status', `<select id="im-status" class="input">
+            <option value="ativo" ${im.status === 'ativo' ? 'selected' : ''}>Ativo (alugado)</option>
+            <option value="vago" ${im.status === 'vago' ? 'selected' : ''}>Vago (sem inquilino)</option>
+            <option value="construcao" ${im.status === 'construcao' ? 'selected' : ''}>Em construção</option>
+            <option value="proprio" ${im.status === 'proprio' ? 'selected' : ''}>Próprio (oculto do app)</option>
+          </select>`)}
+        </div>
+        ${field('Observações', `<textarea id="im-obs" class="input" rows="2">${escapeHtml(im.obs || '')}</textarea>`)}
+      </div>
+      <div class="flex justify-end gap-3 p-6 border-t" style="border-color:#e8dfc9">
+        <button onclick="fecharModais()" class="px-5 py-2 rounded-md text-sm font-semibold text-stone-700 hover:bg-stone-100">Cancelar</button>
+        <button onclick="confirmarSalvarImovel()" class="px-5 py-2 rounded-md text-sm font-semibold text-amber-50" style="background:#1a4d3a">Salvar</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderModalDespesa(d) {
+  const dx = state.modalDespesa;
+  const opcoesImoveis = d.imoveisAtivos.map(i => `<option value="${escapeHtml(i.nome)}" ${dx.imovel === i.nome ? 'selected' : ''}>${escapeHtml(i.nome)}</option>`).join('') + `<option value="Consórcio Embracon" ${dx.imovel === 'Consórcio Embracon' ? 'selected' : ''}>Consórcio Embracon</option>`;
+  // Sugestões: padrão + categorias já usadas em despesas anteriores
+  const tiposPadrao = ['Condomínio','IPTU','Taxa ADM','Carnê Leão','Internet','Luz','Água','Financiamento','Consórcio','Manutenção','Seguro','Reforma','Outros'];
+  const tiposUsados = [...new Set(state.despesas.map(d => d.tipo).filter(t => t))];
+  const tiposCombinados = [...new Set([...tiposPadrao, ...tiposUsados])].sort();
+  return `<div class="fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4" onclick="if(event.target===this)fecharModais()">
+    <div class="card rounded-xl max-w-lg w-full" style="background:#fdfbf6">
+      <div class="flex justify-between items-center p-6 border-b" style="border-color:#e8dfc9">
+        <h3 class="titulo-serif text-2xl font-bold" style="color:#1a3a2a">${dx.id ? 'Editar despesa' : 'Nova despesa'}</h3>
+        <button onclick="fecharModais()">${icons.x}</button>
+      </div>
+      <div class="p-6 space-y-4">
+        ${field('Imóvel', `<select id="dp-imovel" class="input">${opcoesImoveis}</select>`)}
+        ${field('Tipo de despesa', `<input id="dp-tipo" class="input" list="dp-tipos-list" value="${escapeHtml(dx.tipo || '')}" placeholder="Ex: Carnê Leão, Condomínio, IPTU..."/><datalist id="dp-tipos-list">${tiposCombinados.map(t => `<option value="${escapeHtml(t)}"></option>`).join('')}</datalist>`)}
+        <p class="text-xs text-stone-500 -mt-2">💡 Pode digitar uma categoria nova (ex: "Carnê Leão") ou escolher uma existente.</p>
+        <div class="grid grid-cols-3 gap-4">
+          ${field('Dia', `<input id="dp-dia" type="number" min="1" max="31" class="input" value="${dx.dia_venc || 1}"/>`)}
+          ${field('Mês', `<select id="dp-mes" class="input">${MESES.map((m,i) => `<option value="${i+1}" ${dx.mes === i+1 ? 'selected' : ''}>${m}</option>`).join('')}</select>`)}
+          ${field('Ano', `<input id="dp-ano" type="number" class="input" value="${dx.ano || HOJE.getFullYear()}"/>`)}
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          ${field('Valor (R$)', `<input id="dp-valor" type="number" step="0.01" class="input" value="${dx.valor || 0}"/>`)}
+          ${field('Status', `<select id="dp-status" class="input"><option value="pendente" ${dx.status === 'pendente' ? 'selected' : ''}>Pendente</option><option value="pago" ${dx.status === 'pago' ? 'selected' : ''}>Pago</option></select>`)}
+        </div>
+        ${field('Pago por', `<select id="dp-pagopor" class="input">
+          <option value="proprietario" ${(dx.pago_por || 'proprietario') === 'proprietario' ? 'selected' : ''}>👤 Proprietário</option>
+          <option value="inquilino" ${dx.pago_por === 'inquilino' ? 'selected' : ''}>🏠 Inquilino</option>
+        </select>`)}
+        <p class="text-xs text-stone-500 -mt-2">💡 Sinaliza quem é responsável pelo pagamento. Útil pra IPTU/condomínio onde o inquilino paga direto.</p>
+
+        <div class="rounded-lg p-3" style="background:#f5f1e8;border:1px solid #d4c5a0">
+          <label class="flex items-start gap-2 cursor-pointer">
+            <input type="checkbox" id="dp-recorrente" ${dx.recorrente ? 'checked' : ''} class="mt-0.5"/>
+            <div>
+              <div class="text-sm font-semibold" style="color:#1a3a2a">🔄 Despesa recorrente (todo mês)</div>
+              <div class="text-xs text-stone-500 mt-0.5">Marque pra Carnê Leão, Condomínio, IPTU mensal, etc. Vai aparecer um botão pra gerar a despesa automaticamente todo mês — você só confirma o valor.</div>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3 p-6 border-t" style="border-color:#e8dfc9">
+        <button onclick="fecharModais()" class="px-5 py-2 rounded-md text-sm font-semibold text-stone-700 hover:bg-stone-100">Cancelar</button>
+        <button onclick="confirmarSalvarDespesa()" class="px-5 py-2 rounded-md text-sm font-semibold text-amber-50" style="background:#1a4d3a">Salvar</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderModalReceita(d) {
+  const r = state.modalReceita;
+  const opcoesImoveis = d.imoveisAtivos.map(i => `<option value="${escapeHtml(i.nome)}" ${r.imovel === i.nome ? 'selected' : ''}>${escapeHtml(i.nome)}</option>`).join('');
+  return `<div class="fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4" onclick="if(event.target===this)fecharModais()">
+    <div class="card rounded-xl max-w-lg w-full" style="background:#fdfbf6">
+      <div class="flex justify-between items-center p-6 border-b" style="border-color:#e8dfc9">
+        <h3 class="titulo-serif text-2xl font-bold" style="color:#1a3a2a">${r.id ? 'Editar receita' : 'Nova receita'}</h3>
+        <button onclick="fecharModais()">${icons.x}</button>
+      </div>
+      <div class="p-6 space-y-4">
+        ${field('Imóvel', `<select id="rc-imovel" class="input">${opcoesImoveis}</select>`)}
+        <div class="grid grid-cols-2 gap-4">
+          ${field('Mês', `<select id="rc-mes" class="input">${MESES.map((m,i) => `<option value="${i+1}" ${r.mes === i+1 ? 'selected' : ''}>${m}</option>`).join('')}</select>`)}
+          ${field('Ano', `<input id="rc-ano" type="number" class="input" value="${r.ano || HOJE.getFullYear()}"/>`)}
+        </div>
+        ${field('Valor recebido (R$)', `<input id="rc-valor" type="number" step="0.01" class="input" value="${r.valor || 0}"/>`)}
+      </div>
+      <div class="flex justify-end gap-3 p-6 border-t" style="border-color:#e8dfc9">
+        <button onclick="fecharModais()" class="px-5 py-2 rounded-md text-sm font-semibold text-stone-700 hover:bg-stone-100">Cancelar</button>
+        <button onclick="confirmarSalvarReceita()" class="px-5 py-2 rounded-md text-sm font-semibold text-amber-50" style="background:#1a4d3a">Salvar</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function field(label, input) {
+  return `<div><label class="block text-xs uppercase tracking-wider font-semibold mb-1.5" style="color:#5d4037">${label}</label>${input}</div>`;
+}
+
+// === HANDLERS GLOBAIS ===
+window.setAba = (a) => { state.aba = a; state.modalDetalheImovel = null; render(); };
+window.fecharModais = () => { state.modalImovel = null; state.modalDespesa = null; state.modalReceita = null; render(); };
+
+// Filtros
+window.setFiltroImovelLanc = (v) => { state.filtroImovelLanc = v; render(); };
+window.setFiltroMesLanc = (v) => { state.filtroMesLanc = v; render(); };
+window.setFiltroAnoLanc = (v) => { state.filtroAnoLanc = v; render(); };
+window.setFiltroPeriodoRapido = (v) => {
+  state.filtroPeriodoRapido = v;
+  if (v !== 'tudo') {
+    state.filtroMesLanc = 'todos';
+    state.filtroAnoLanc = 'todos';
+    state.filtroDataInicio = '';
+    state.filtroDataFim = '';
+  }
+  render();
+};
+window.setFiltroDataInicio = (v) => { state.filtroDataInicio = v; if (v) state.filtroPeriodoRapido = 'tudo'; render(); };
+window.setFiltroDataFim = (v) => { state.filtroDataFim = v; if (v) state.filtroPeriodoRapido = 'tudo'; render(); };
+window.limparFiltrosLanc = () => {
+  state.filtroImovelLanc = 'todos';
+  state.filtroMesLanc = 'todos';
+  state.filtroAnoLanc = 'todos';
+  state.filtroPeriodoRapido = 'tudo';
+  state.filtroDataInicio = '';
+  state.filtroDataFim = '';
+  render();
+};
+
+// Modal detalhes
+window.abrirDetalheImovel = (nome) => { state.modalDetalheImovel = nome; render(); };
+window.fecharDetalheImovel = () => { state.modalDetalheImovel = null; render(); };
+
+// Handlers de anexos
+window.abrirModalAnexos = async (tipo, id, nome) => {
+  state.modalAnexos = { tipo, id, nome };
+  render();
+  // Carregar anexos se ainda não tiver no cache
+  const key = `${tipo}_${id}`;
+  if (!state.anexosCache.hasOwnProperty(key)) {
+    await listarAnexos(tipo, id);
+    render();
+  }
+};
+window.fecharModalAnexos = () => { state.modalAnexos = null; render(); };
+window.onAnexoSelecionado = async (event, tipo, id) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  const ok = await uploadAnexo(tipo, id, file);
+  if (ok) event.target.value = ''; // limpa pra poder selecionar de novo
+};
+window.deletarAnexoUI = async (tipo, id, fullPath) => {
+  await deletarAnexo(tipo, id, fullPath);
+};
+
+// ==== HANDLERS DE DOCUMENTOS POR IMÓVEL ====
+window.abrirModalDocumentos = async (imovelId, imovelNome) => {
+  state.modalDocumentos = { imovelId, imovelNome, categoriaAtiva: 'matricula' };
+  render();
+  // Carrega docs da categoria inicial
+  const key = `doc_${imovelId}_matricula`;
+  if (!state.anexosCache.hasOwnProperty(key)) {
+    await listarDocumentos(imovelId, 'matricula');
+    render();
+  }
+};
+
+window.fecharModalDocumentos = () => { state.modalDocumentos = null; render(); };
+
+window.selecionarCategoriaDoc = async (categoriaId) => {
+  if (!state.modalDocumentos) return;
+  state.modalDocumentos.categoriaAtiva = categoriaId;
+  render();
+  const key = `doc_${state.modalDocumentos.imovelId}_${categoriaId}`;
+  if (!state.anexosCache.hasOwnProperty(key)) {
+    await listarDocumentos(state.modalDocumentos.imovelId, categoriaId);
+    render();
+  }
+};
+
+window.onDocumentoSelecionado = async (event, imovelId, categoriaId) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  const ok = await uploadDocumento(imovelId, categoriaId, file);
+  if (ok) event.target.value = '';
+};
+
+window.deletarDocumentoUI = async (imovelId, categoriaId, fullPath) => {
+  await deletarDocumento(imovelId, categoriaId, fullPath);
+};
+
+// Funções de storage pra documentos (usa o mesmo Firebase Storage, pasta diferente)
+async function listarDocumentos(imovelId, categoriaId) {
+  try {
+    const st = window.firebaseStorage;
+    const folderRef = st.ref(st.storage, `${STORAGE_PASTA}/documentos/${imovelId}/${categoriaId}`);
+    const result = await st.listAll(folderRef);
+    const anexos = await Promise.all(
+      result.items.map(async (itemRef) => {
+        const url = await st.getDownloadURL(itemRef);
+        return { nome: itemRef.name, url, fullPath: itemRef.fullPath };
+      })
+    );
+    const key = `doc_${imovelId}_${categoriaId}`;
+    state.anexosCache[key] = anexos;
+    state.anexosCount[key] = anexos.length;
+    return anexos;
+  } catch (e) {
+    console.error("Erro ao listar documentos:", e);
+    const key = `doc_${imovelId}_${categoriaId}`;
+    state.anexosCache[key] = [];
+    state.anexosCount[key] = 0;
+    return [];
+  }
+}
+
+async function uploadDocumento(imovelId, categoriaId, file) {
+  if (file.size > 10 * 1024 * 1024) {
+    alert("Arquivo muito grande! Limite de 10MB.");
+    return false;
+  }
+  try {
+    state.uploadProgresso = true;
+    render();
+    const st = window.firebaseStorage;
+    const nomeSeguro = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    const nomeArquivo = `${Date.now()}_${nomeSeguro}`;
+    const fileRef = st.ref(st.storage, `${STORAGE_PASTA}/documentos/${imovelId}/${categoriaId}/${nomeArquivo}`);
+    await st.uploadBytes(fileRef, file);
+    await listarDocumentos(imovelId, categoriaId);
+    state.uploadProgresso = false;
+    render();
+    return true;
+  } catch (e) {
+    state.uploadProgresso = false;
+    alert("Erro ao enviar arquivo: " + e.message);
+    render();
+    return false;
+  }
+}
+
+async function deletarDocumento(imovelId, categoriaId, fullPath) {
+  if (!confirm("Apagar este documento? Não dá pra recuperar depois.")) return;
+  try {
+    const st = window.firebaseStorage;
+    const fileRef = st.ref(st.storage, fullPath);
+    await st.deleteObject(fileRef);
+    await listarDocumentos(imovelId, categoriaId);
+    render();
+  } catch (e) { alert("Erro ao apagar: " + e.message); }
+}
+
+// Contagem inicial de documentos por imóvel (só total, sem detalhes)
+async function carregarContagemDocumentos() {
+  try {
+    const st = window.firebaseStorage;
+    for (const im of state.imoveis) {
+      for (const cat of CATEGORIAS_DOC) {
+        try {
+          const folderRef = st.ref(st.storage, `${STORAGE_PASTA}/documentos/${im.id}/${cat.id}`);
+          const result = await st.listAll(folderRef);
+          state.anexosCount[`doc_${im.id}_${cat.id}`] = result.items.length;
+        } catch (e) {
+          state.anexosCount[`doc_${im.id}_${cat.id}`] = 0;
+        }
+      }
+    }
+    render();
+  } catch (e) {
+    console.error("Erro ao contar documentos:", e);
+  }
+}
+
+
+window.abrirModalImovel = () => { state.modalImovel = {}; render(); };
+window.editarImovel = (id) => { state.modalImovel = state.imoveis.find(i => i.id === id) || {}; render(); };
+window.confirmarSalvarImovel = () => {
+  const im = {
+    ...state.modalImovel,
+    nome: document.getElementById('im-nome').value,
+    endereco: document.getElementById('im-endereco').value,
+    tipo: document.getElementById('im-tipo').value,
+    inquilino: document.getElementById('im-inquilino').value,
+    aluguel: parseFloat(document.getElementById('im-aluguel').value) || 0,
+    condominio: parseFloat(document.getElementById('im-condominio').value) || 0,
+    condominio_pago_por: document.getElementById('im-cond_pago').value,
+    iptu: parseFloat(document.getElementById('im-iptu').value) || 0,
+    iptu_pago_por: document.getElementById('im-iptu_pago').value,
+    taxa_adm: parseFloat(document.getElementById('im-taxa').value) || 0,
+    dia_vencimento: parseInt(document.getElementById('im-dia').value) || 1,
+    status: document.getElementById('im-status').value,
+    obs: document.getElementById('im-obs').value,
+  };
+  salvarImovel(im);
+};
+
+window.abrirModalDespesa = () => { state.modalDespesa = { ano: HOJE.getFullYear(), mes: HOJE.getMonth() + 1, status: 'pendente', dia_venc: 1 }; render(); };
+window.editarDespesa = (id) => { state.modalDespesa = state.despesas.find(d => d.id === id) || {}; render(); };
+window.confirmarSalvarDespesa = () => {
+  const recEl = document.getElementById('dp-recorrente');
+  const d = {
+    ...state.modalDespesa,
+    imovel: document.getElementById('dp-imovel').value,
+    tipo: document.getElementById('dp-tipo').value.trim(),
+    dia_venc: parseInt(document.getElementById('dp-dia').value) || 1,
+    mes: parseInt(document.getElementById('dp-mes').value),
+    ano: parseInt(document.getElementById('dp-ano').value) || HOJE.getFullYear(),
+    valor: parseFloat(document.getElementById('dp-valor').value) || 0,
+    status: document.getElementById('dp-status').value,
+    pago_por: document.getElementById('dp-pagopor').value,
+    recorrente: recEl ? recEl.checked : false,
+    confirmar_valor: false, // editou = confirmou
+  };
+  if (!d.tipo) { alert('Digite o tipo da despesa'); return; }
+  salvarDespesa(d);
+};
+
+window.abrirModalReceita = () => { state.modalReceita = { ano: HOJE.getFullYear(), mes: HOJE.getMonth() + 1 }; render(); };
+window.editarReceita = (id) => { state.modalReceita = state.receitas.find(r => r.id === id) || {}; render(); };
+window.confirmarSalvarReceita = () => {
+  const r = {
+    ...state.modalReceita,
+    imovel: document.getElementById('rc-imovel').value,
+    mes: parseInt(document.getElementById('rc-mes').value),
+    ano: parseInt(document.getElementById('rc-ano').value) || HOJE.getFullYear(),
+    valor: parseFloat(document.getElementById('rc-valor').value) || 0,
+  };
+  salvarReceita(r);
+};
+
+window.removerImovel = removerImovel;
+window.removerDespesa = removerDespesa;
+window.removerReceita = removerReceita;
+window.marcarPaga = marcarPaga;
+window.carregarDados = carregarDados;
+
+window.gerarRecorrentesUI = () => {
+  const mesAtual = HOJE.getMonth() + 1;
+  const anoAtual = HOJE.getFullYear();
+  state.modalGerarRecorrentes = { mesAlvo: 12, anoAlvo: anoAtual };
+  render();
+};
+
+window.fecharModalGerarRecorrentes = () => {
+  state.modalGerarRecorrentes = null;
+  render();
+};
+
+window.atualizarPreviewGerar = () => {
+  const mesEl = document.getElementById('gr-mes');
+  const anoEl = document.getElementById('gr-ano');
+  if (!mesEl || !anoEl) return;
+  state.modalGerarRecorrentes = {
+    mesAlvo: parseInt(mesEl.value),
+    anoAlvo: parseInt(anoEl.value),
+  };
+  render();
+};
+
+window.confirmarGerarRecorrentes = () => {
+  const mesEl = document.getElementById('gr-mes');
+  const anoEl = document.getElementById('gr-ano');
+  const mesAlvo = parseInt(mesEl.value);
+  const anoAlvo = parseInt(anoEl.value);
+  const mesAtual = HOJE.getMonth() + 1;
+  const anoAtual = HOJE.getFullYear();
+
+  // Validar
+  if ((anoAlvo < anoAtual) || (anoAlvo === anoAtual && mesAlvo < mesAtual)) {
+    alert('O mês final deve ser igual ou posterior ao mês atual.');
+    return;
+  }
+
+  if (confirm(`Gerar despesas recorrentes de ${MESES[mesAtual-1]}/${anoAtual} até ${MESES[mesAlvo-1]}/${anoAlvo}?\n\nIsso pode criar várias despesas. Despesas que já existem serão ignoradas.`)) {
+    gerarRecorrentes(mesAtual, anoAtual, mesAlvo, anoAlvo);
+  }
+};
+
+window.ativarNotificacoes = async () => {
+  if (!('Notification' in window)) { alert('Seu navegador não suporta notificações.'); return; }
+  const permissao = await Notification.requestPermission();
+  if (permissao === 'granted') {
+    const d = getDados();
+    const venc7 = d.proximosVencimentos.filter(v => v.diasRestantes >= 0 && v.diasRestantes <= 7);
+    if (venc7.length > 0) new Notification('Mille Miglia - Alerta', { body: `Você tem ${venc7.length} vencimento(s) nos próximos 7 dias.` });
+    else new Notification('Mille Miglia', { body: 'Notificações ativadas! Você não tem vencimentos urgentes.' });
+  }
+};
+
+window.exportarCalendario = () => {
+  const d = getDados();
+  let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MilleMiglia//PT-BR//\r\n';
+  d.proximosVencimentos.forEach(v => {
+    const data = v.dataVenc;
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const dia = String(data.getDate()).padStart(2, '0');
+    ics += 'BEGIN:VEVENT\r\n';
+    ics += `UID:${v.id}-${ano}${mes}${dia}@millemiglia\r\n`;
+    ics += `DTSTART;VALUE=DATE:${ano}${mes}${dia}\r\n`;
+    ics += `DTEND;VALUE=DATE:${ano}${mes}${dia}\r\n`;
+    ics += `SUMMARY:💰 ${v.tipo} - ${v.imovel} - ${formatBRL(v.valor)}\r\n`;
+    ics += `DESCRIPTION:Vencimento de ${v.tipo} do imóvel ${v.imovel}. Valor: ${formatBRL(v.valor)}\r\n`;
+    ics += 'BEGIN:VALARM\r\nTRIGGER:-P3D\r\nACTION:DISPLAY\r\nDESCRIPTION:Vencimento em 3 dias\r\nEND:VALARM\r\n';
+    ics += 'BEGIN:VALARM\r\nTRIGGER:-P1D\r\nACTION:DISPLAY\r\nDESCRIPTION:Vencimento amanhã\r\nEND:VALARM\r\n';
+    ics += 'END:VEVENT\r\n';
+  });
+  ics += 'END:VCALENDAR';
+  const blob = new Blob([ics], { type: 'text/calendar' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'vencimentos-millemiglia.ics'; a.click();
+  URL.revokeObjectURL(url);
+};
+
+window.exportarRelatorioCSV = () => {
+  const d = getDados();
+  // CSV com BOM para Excel ler acentos
+  let csv = '\uFEFF';
+  csv += `Relatório Mille Miglia - ${d.anoPassado} vs ${d.anoAtual}\r\n\r\n`;
+
+  // Resumo geral
+  csv += 'RESUMO GERAL\r\n';
+  csv += `Indicador;${d.anoPassado};${d.anoAtual}\r\n`;
+  csv += `Receitas;${d.indicadores.totalReceitaAnoPassado.toFixed(2).replace('.',',')};${d.indicadores.totalReceitaAno.toFixed(2).replace('.',',')}\r\n`;
+  csv += `Despesas;${d.indicadores.totalDespesaAnoPassado.toFixed(2).replace('.',',')};${d.indicadores.totalDespesaAno.toFixed(2).replace('.',',')}\r\n`;
+  csv += `Resultado;${(d.indicadores.totalReceitaAnoPassado - d.indicadores.totalDespesaAnoPassado).toFixed(2).replace('.',',')};${(d.indicadores.totalReceitaAno - d.indicadores.totalDespesaAno).toFixed(2).replace('.',',')}\r\n\r\n`;
+
+  // Por imóvel
+  csv += `RESUMO POR IMÓVEL (${d.anoAtual})\r\n`;
+  csv += 'Imóvel;Inquilino;Status;Receita;Despesa;Resultado;Margem%\r\n';
+  d.resumoImoveis.forEach(r => {
+    csv += `${r.nome};${r.inquilino || ''};${r.status};${r.receitaAno.toFixed(2).replace('.',',')};${r.despesaAno.toFixed(2).replace('.',',')};${r.resultadoAno.toFixed(2).replace('.',',')};${r.margemAno !== null ? r.margemAno.toFixed(1).replace('.',',') + '%' : '-'}\r\n`;
+  });
+  csv += '\r\n';
+
+  // Receitas detalhadas
+  csv += `RECEITAS ${d.anoAtual}\r\n`;
+  csv += 'Mês;Ano;Imóvel;Valor\r\n';
+  d.receitasAtivas.filter(r => r.ano === d.anoAtual).forEach(r => {
+    csv += `${MESES[r.mes-1]};${r.ano};${r.imovel};${Number(r.valor).toFixed(2).replace('.',',')}\r\n`;
+  });
+  csv += '\r\n';
+
+  // Despesas detalhadas
+  csv += `DESPESAS ${d.anoAtual}\r\n`;
+  csv += 'Mês;Ano;Imóvel;Tipo;Vencimento;Valor;Status;Pago por\r\n';
+  d.despesasAtivas.filter(x => x.ano === d.anoAtual).forEach(x => {
+    csv += `${MESES[x.mes-1]};${x.ano};${x.imovel};${x.tipo};${String(x.dia_venc).padStart(2,'0')}/${String(x.mes).padStart(2,'0')}/${x.ano};${Number(x.valor).toFixed(2).replace('.',',')};${x.status};${x.pago_por === 'inquilino' ? 'Inquilino' : 'Proprietário'}\r\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `relatorio-millemiglia-${d.anoAtual}.csv`; a.click();
+  URL.revokeObjectURL(url);
+};
+
+window.exportarRelatorioPDF = () => {
+  // Usa o print do navegador (que vai gerar PDF se a pessoa escolher "Salvar como PDF")
+  window.print();
+};
+
+// === CONCILIAÇÃO COM EXTRATO (início) ===
+// Lê o extrato do banco (OFX ou CSV exportado do C6) e sugere:
+//   • entradas  → aluguel recebido (cria a receita do imóvel no mês)
+//   • saídas    → despesa pendente paga (marca como paga)
+// Nada é gravado sem a pessoa conferir e confirmar.
+const Conciliacao = (() => {
+  const semAcento = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const num = s => {
+    let t = String(s ?? '').trim().replace(/R\$\s?/i, '').replace(/\s/g, '');
+    let neg = /^\(.*\)$/.test(t) || /-$/.test(t) || /^-/.test(t) || /D$/i.test(t);
+    t = t.replace(/[()\-+DC]/gi, '');
+    if (/,\d{1,2}$/.test(t)) t = t.replace(/\./g, '').replace(',', '.');
+    else t = t.replace(/,/g, '');
+    const v = parseFloat(t);
+    return isNaN(v) ? NaN : (neg ? -v : v);
+  };
+  const isoData = s => {
+    s = String(s || '').trim();
+    let m = s.match(/^(\d{4})(\d{2})(\d{2})/);           // OFX 20261105...
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+    m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+    m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+    if (m) return `${m[3].length === 2 ? '20' + m[3] : m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+    return '';
+  };
+  const hash = s => { let h = 5381; for (const c of s) h = ((h << 5) + h + c.charCodeAt(0)) >>> 0; return h.toString(36); };
+
+  function lerOFX(txt) {
+    const out = [];
+    const blocos = txt.split(/<STMTTRN>/i).slice(1);
+    for (const b of blocos) {
+      const tag = n => { const m = b.match(new RegExp('<' + n + '>([^<\\r\\n]*)', 'i')); return m ? m[1].trim() : ''; };
+      const valor = num(tag('TRNAMT').replace(',', '.').replace(/^\+/, ''));
+      const data = isoData(tag('DTPOSTED'));
+      const desc = [tag('NAME'), tag('MEMO')].filter(Boolean).join(' · ');
+      if (!data || isNaN(valor)) continue;
+      out.push({ id: tag('FITID') ? 'ofx:' + tag('FITID') : 'h:' + hash(data + valor + desc), data, valor, desc });
+    }
+    return out;
+  }
+
+  function dividirLinhaCSV(l, sep) {
+    const r = []; let cur = '', q = false;
+    for (let i = 0; i < l.length; i++) {
+      const c = l[i];
+      if (c === '"') { if (q && l[i + 1] === '"') { cur += '"'; i++; } else q = !q; }
+      else if (c === sep && !q) { r.push(cur); cur = ''; }
+      else cur += c;
+    }
+    r.push(cur);
+    return r.map(x => x.trim());
+  }
+
+  function lerCSV(txt) {
+    const linhas = txt.replace(/^﻿/, '').split(/\r?\n/).filter(l => l.trim());
+    // acha a linha de cabeçalho (a primeira que tem "data" e "valor"/"entrada"/"saída")
+    let hi = linhas.findIndex(l => /data/i.test(semAcento(l)) && /(valor|entrada|saida|credito|debito)/.test(semAcento(l)));
+    if (hi < 0) throw new Error('Não achei o cabeçalho do extrato (colunas Data e Valor).');
+    const sep = [';', ',', '\t'].sort((a, b) => linhas[hi].split(b).length - linhas[hi].split(a).length)[0];
+    const cab = dividirLinhaCSV(linhas[hi], sep).map(semAcento);
+    const col = (...re) => cab.findIndex(c => re.some(r => r.test(c)));
+    const iData = col(/^data( (lancamento|movimento|transacao))?$/, /^data/);
+    const iDesc = col(/^descri/, /historico/, /^titulo/, /lancamento$/, /detalhe/);
+    const iDesc2 = col(/^descri/, /^detalhe/, /complemento/, /^nome/, /favorecido/, /pagador/);
+    const iValor = col(/^valor/);
+    const iEnt = col(/^entrada/, /^credito/);
+    const iSai = col(/^saida/, /^debito/);
+    const iTipo = col(/^(tipo|natureza|d\/c)$/);
+    const out = [];
+    for (const l of linhas.slice(hi + 1)) {
+      const c = dividirLinhaCSV(l, sep);
+      const data = isoData(c[iData]);
+      if (!data) continue;
+      let valor;
+      if (iValor >= 0 && c[iValor] !== '') {
+        valor = num(c[iValor]);
+        if (iTipo >= 0 && /^(d|debito|saida)/.test(semAcento(c[iTipo])) && valor > 0) valor = -valor;
+      } else {
+        const e = iEnt >= 0 ? num(c[iEnt]) : NaN, s = iSai >= 0 ? num(c[iSai]) : NaN;
+        valor = !isNaN(e) && e !== 0 ? Math.abs(e) : (!isNaN(s) ? -Math.abs(s) : NaN);
+      }
+      if (isNaN(valor) || valor === 0) continue;
+      const desc = [c[iDesc], iDesc2 !== iDesc ? c[iDesc2] : ''].filter(Boolean).join(' · ');
+      out.push({ id: 'h:' + hash(data + '|' + valor.toFixed(2) + '|' + desc), data, valor, desc });
+    }
+    return out;
+  }
+
+  function ler(txt, nome = '') {
+    if (/<OFX>|<STMTTRN>/i.test(txt) || /\.ofx$/i.test(nome)) return lerOFX(txt);
+    return lerCSV(txt);
+  }
+
+  const dias = (a, b) => Math.round((new Date(a + 'T12:00:00') - new Date(b + 'T12:00:00')) / 864e5);
+  const palavras = s => semAcento(s).split(/[^a-z0-9]+/).filter(w => w.length >= 3 && !['ltda', 'pix', 'ted', 'doc', 'recebido', 'enviado', 'transferencia', 'pagamento', 'boleto'].includes(w));
+
+  // Monta as sugestões. Devolve uma linha por transação com:
+  //   opcoes: [{ chave, rotulo }]  e  sugestao: chave (ou '' = ignorar)
+  function sugerir(transacoes, { imoveis, receitas, despesas }) {
+    const usados = new Set([...receitas, ...despesas].map(x => x.extrato_id).filter(Boolean));
+    const ocupadas = new Set();
+    const linhas = [];
+    for (const t of transacoes) {
+      const l = { ...t, opcoes: [], sugestao: '', jaConciliado: usados.has(t.id) };
+      if (l.jaConciliado) { linhas.push(l); continue; }
+      const [ano, mes] = t.data.split('-').map(Number);
+      if (t.valor > 0) {
+        const pt = new Set(palavras(t.desc));
+        const cands = imoveis.filter(im => im.status !== 'proprio').map(im => {
+          const jaTem = receitas.some(r => r.imovel === im.nome && r.mes === mes && r.ano === ano);
+          const aluguel = Number(im.aluguel) || 0;
+          const nomeBate = palavras(im.inquilino).some(w => pt.has(w));
+          const valorBate = aluguel > 0 && Math.abs(aluguel - t.valor) <= Math.max(1, aluguel * 0.02);
+          const pontos = (nomeBate ? 2 : 0) + (valorBate ? 2 : 0) + (im.status === 'ativo' ? 0.5 : 0) - (jaTem ? 3 : 0);
+          return { im, pontos, jaTem, nomeBate, valorBate };
+        }).sort((a, b) => b.pontos - a.pontos);
+        l.opcoes = cands.map(c => ({ chave: 'rec:' + c.im.nome, rotulo: `Aluguel ${MESES_C[mes - 1]}/${ano} · ${c.im.nome}${c.im.inquilino ? ' (' + c.im.inquilino + ')' : ''}${c.jaTem ? ' · já tem receita no mês' : ''}` }));
+        const top = cands[0], seg = cands[1];
+        if (top && top.pontos >= 2 && !top.jaTem && (!seg || top.pontos > seg.pontos) && !ocupadas.has('rec:' + top.im.nome + mes + ano)) {
+          l.sugestao = 'rec:' + top.im.nome;
+          ocupadas.add('rec:' + top.im.nome + mes + ano);
+        }
+      } else {
+        const v = -t.valor;
+        const cands = despesas.filter(d => d.status !== 'pago' && d.pago_por !== 'inquilino').map(d => {
+          const venc = `${d.ano}-${String(d.mes).padStart(2, '0')}-${String(d.dia_venc || 1).padStart(2, '0')}`;
+          const dist = Math.abs(dias(t.data, venc));
+          const exato = Math.abs(Number(d.valor) - v) <= 0.01;
+          const perto = Math.abs(Number(d.valor) - v) <= Math.max(1, Number(d.valor) * 0.05);
+          return { d, dist, exato, perto };
+        }).filter(c => c.dist <= 60).sort((a, b) => (b.exato - a.exato) || (b.perto - a.perto) || (a.dist - b.dist));
+        l.opcoes = cands.map(c => ({ chave: 'desp:' + c.d.id, rotulo: `${c.d.tipo} · ${c.d.imovel} · vence ${String(c.d.dia_venc).padStart(2, '0')}/${String(c.d.mes).padStart(2, '0')} · ${fmt(c.d.valor)}${c.exato ? '' : ' (valor diferente)'}` }));
+        const exatos = cands.filter(c => c.exato && c.dist <= 20 && !ocupadas.has(c.d.id));
+        if (exatos.length === 1 || (exatos.length > 1 && exatos[0].dist < exatos[1].dist)) {
+          l.sugestao = 'desp:' + exatos[0].d.id;
+          ocupadas.add(exatos[0].d.id);
+        }
+      }
+      linhas.push(l);
+    }
+    return linhas;
+  }
+  const MESES_C = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+  const fmt = v => 'R$ ' + Number(v || 0).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return { ler, lerOFX, lerCSV, sugerir, num, isoData };
+})();
+if (typeof module !== 'undefined') module.exports = Conciliacao;
+// === CONCILIAÇÃO COM EXTRATO (fim) ===
+
+// === TELA DE CONFERIR EXTRATO ===
+function renderModalExtrato() {
+  const m = state.modalExtrato;
+  const linhas = m.linhas || [];
+  const pend = linhas.filter(l => !l.jaConciliado);
+  const marcadas = pend.filter(l => l.escolha);
+  const corValor = v => v > 0 ? '#065f46' : '#991b1b';
+  return `<div class="fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4" onclick="if(event.target===this)fecharModalExtrato()">
+    <div class="card rounded-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto" style="background:#fdfbf6">
+      <div class="flex justify-between items-start p-6 border-b" style="border-color:#e8dfc9">
+        <div>
+          <h3 class="titulo-serif text-2xl font-bold" style="color:#1a3a2a">🏦 Conferir extrato do banco</h3>
+          <p class="text-sm text-stone-500 mt-1">Suba o extrato do C6 (OFX ou CSV). O app reconhece aluguéis que entraram e contas que saíram. Você confere e confirma.</p>
+        </div>
+        <button onclick="fecharModalExtrato()">${icons.x}</button>
+      </div>
+      <div class="p-6 space-y-4">
+        <label class="block rounded-lg p-4 text-center cursor-pointer hover:bg-amber-50" style="border:2px dashed #d4c5a0">
+          <input type="file" accept=".ofx,.csv,.txt" class="hidden" onchange="onExtratoSelecionado(event)"/>
+          <span class="text-sm font-semibold" style="color:#1a4d3a">${m.arquivo ? '📄 ' + escapeHtml(m.arquivo) + ' · trocar arquivo' : '📂 Escolher arquivo do extrato'}</span>
+          <span class="block text-xs text-stone-500 mt-1">No C6 Empresas: Extrato › Exportar › OFX (ou CSV)</span>
+        </label>
+        ${m.erro ? `<div class="rounded-lg p-3 text-sm" style="background:#fee2e2;color:#991b1b">${escapeHtml(m.erro)}</div>` : ''}
+        ${linhas.length ? `
+          <p class="text-sm text-stone-600">${linhas.length} movimentação(ões) · ${linhas.length - pend.length} já conferida(s) antes · <strong>${marcadas.length} para lançar</strong></p>
+          <div class="overflow-x-auto"><table class="w-full text-sm">
+            <thead><tr class="text-left text-xs uppercase tracking-wider" style="color:#5d4037"><th class="py-2 pr-3">Data</th><th class="py-2 pr-3">Descrição</th><th class="py-2 pr-3 text-right">Valor</th><th class="py-2">O que é</th></tr></thead>
+            <tbody>
+            ${linhas.map((l, i) => `<tr class="border-t" style="border-color:#e8dfc9;${l.jaConciliado ? 'opacity:.45' : ''}">
+              <td class="py-2 pr-3 num-mono whitespace-nowrap">${l.data.split('-').reverse().join('/')}</td>
+              <td class="py-2 pr-3 text-stone-700">${escapeHtml(l.desc)}</td>
+              <td class="py-2 pr-3 text-right num-mono font-semibold whitespace-nowrap" style="color:${corValor(l.valor)}">${formatBRL(l.valor)}</td>
+              <td class="py-2" style="min-width:280px">${l.jaConciliado ? '<span class="pill badge-pago">✓ já lançado</span>' : `
+                <select class="input" onchange="escolherExtrato(${i}, this.value)" style="${l.escolha ? 'border-color:#1a4d3a;background:#ecfdf5' : ''}">
+                  <option value="">— Ignorar —</option>
+                  ${l.opcoes.map(o => `<option value="${escapeHtml(o.chave)}" ${o.chave === l.escolha ? 'selected' : ''}>${escapeHtml(o.rotulo)}</option>`).join('')}
+                </select>`}</td>
+            </tr>`).join('')}
+            </tbody>
+          </table></div>` : ''}
+      </div>
+      <div class="flex justify-end gap-3 p-6 border-t" style="border-color:#e8dfc9">
+        <button onclick="fecharModalExtrato()" class="px-5 py-2 rounded-md text-sm font-semibold text-stone-700 hover:bg-stone-100">Cancelar</button>
+        ${marcadas.length ? `<button onclick="confirmarExtrato()" ${m.salvando ? 'disabled' : ''} class="px-5 py-2 rounded-md text-sm font-semibold text-amber-50" style="background:#1a4d3a">${m.salvando ? 'Lançando...' : `✓ Lançar ${marcadas.length} item(ns)`}</button>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+window.abrirModalExtrato = () => { state.modalExtrato = { linhas: [] }; render(); };
+window.fecharModalExtrato = () => { state.modalExtrato = null; render(); };
+window.onExtratoSelecionado = async (event) => {
+  const f = event.target.files[0];
+  if (!f) return;
+  const buf = await f.arrayBuffer();
+  let txt = new TextDecoder('utf-8').decode(buf);
+  if (txt.includes('�')) txt = new TextDecoder('iso-8859-1').decode(buf); // extratos antigos em Latin-1
+  try {
+    const trans = Conciliacao.ler(txt, f.name);
+    if (!trans.length) throw new Error('Não encontrei movimentações nesse arquivo.');
+    const linhas = Conciliacao.sugerir(trans, { imoveis: state.imoveis, receitas: state.receitas, despesas: state.despesas });
+    linhas.forEach(l => { l.escolha = l.sugestao; });
+    state.modalExtrato = { arquivo: f.name, linhas };
+  } catch (e) {
+    state.modalExtrato = { arquivo: f.name, linhas: [], erro: e.message };
+  }
+  render();
+};
+window.escolherExtrato = (i, v) => {
+  const m = state.modalExtrato;
+  // a mesma despesa não pode ser usada por duas movimentações
+  if (v.startsWith('desp:') && m.linhas.some((l, j) => j !== i && l.escolha === v)) {
+    alert('Essa despesa já foi escolhida para outra movimentação deste extrato.');
+  } else m.linhas[i].escolha = v;
+  render();
+};
+window.confirmarExtrato = async () => {
+  const m = state.modalExtrato;
+  const fb = window.firebaseDB;
+  const itens = m.linhas.filter(l => !l.jaConciliado && l.escolha);
+  m.salvando = true; render();
+  let rec = 0, desp = 0;
+  try {
+    for (const l of itens) {
+      const [ano, mes] = l.data.split('-').map(Number);
+      if (l.escolha.startsWith('rec:')) {
+        const imovel = l.escolha.slice(4);
+        await fb.addDoc(fb.collection(fb.db, 'receitas'), { imovel, mes, ano, valor: l.valor, extrato_id: l.id, recebido_em: l.data, origem: 'extrato' });
+        rec++;
+      } else if (l.escolha.startsWith('desp:')) {
+        const id = l.escolha.slice(5);
+        const d = state.despesas.find(x => x.id === id);
+        const pago = -l.valor;
+        const dados = { status: 'pago', extrato_id: l.id, pago_em: l.data };
+        if (d && Math.abs(Number(d.valor) - pago) > 0.01) { dados.valor = pago; dados.valor_previsto = Number(d.valor); }
+        if (d && d.confirmar_valor) dados.confirmar_valor = false;
+        await fb.updateDoc(fb.doc(fb.db, 'despesas', id), dados);
+        desp++;
+      }
+    }
+    state.modalExtrato = null;
+    await carregarDados();
+    alert(`✅ Pronto!\n\n${rec} aluguel(éis) lançado(s) como receita\n${desp} despesa(s) marcada(s) como paga(s)`);
+  } catch (e) {
+    m.salvando = false; render();
+    alert('Erro ao lançar: ' + e.message + `\n\n${rec + desp} item(ns) já tinham sido lançados. Se subir o mesmo extrato de novo, eles aparecem como "já lançado".`);
+  }
+};
+
+// === INIT ===
+// Só entra quem tem login (Firebase Authentication › E-mail/senha).
+function aoMudarAuth() {
+  if (window.usuario) carregarDados();
+  else renderLogin();
+}
+function renderLogin(msg) {
+  document.getElementById('app').innerHTML = `<div class="min-h-screen flex items-center justify-center p-6">
+    <form class="card rounded-xl p-8 w-full max-w-sm space-y-4" onsubmit="event.preventDefault(); entrar()">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-lg accent-bg flex items-center justify-center text-amber-100">${icons.building}</div>
+        <div><h1 class="titulo-serif text-3xl font-bold" style="color:#1a3a2a;line-height:1">Mille Miglia</h1>
+        <p class="text-xs uppercase tracking-widest accent-gold font-semibold mt-1">Gestão de Imóveis</p></div>
+      </div>
+      ${msg ? `<div class="rounded-md p-3 text-sm" style="background:#fee2e2;color:#991b1b">${escapeHtml(msg)}</div>` : ''}
+      ${field('E-mail', '<input id="lg-email" type="email" autocomplete="username" class="input" required/>')}
+      ${field('Senha', '<input id="lg-senha" type="password" autocomplete="current-password" class="input" required/>')}
+      <button class="w-full accent-bg text-amber-50 py-2.5 rounded-md text-sm font-semibold">Entrar</button>
+      <button type="button" onclick="esqueciSenha()" class="w-full text-xs text-stone-500 hover:underline">Esqueci a senha</button>
+    </form></div>`;
+}
+window.entrar = async () => {
+  const fa = window.firebaseAuth;
+  try {
+    await fa.signInWithEmailAndPassword(fa.auth, document.getElementById('lg-email').value.trim(), document.getElementById('lg-senha').value);
+  } catch (e) {
+    const c = e.code || '';
+    renderLogin(c.includes('invalid') || c.includes('wrong-password') || c.includes('user-not-found') ? 'E-mail ou senha incorretos.'
+      : c.includes('operation-not-allowed') ? 'O login por e-mail ainda não foi ligado no Firebase.'
+      : c.includes('too-many-requests') ? 'Muitas tentativas. Espere alguns minutos.' : 'Não consegui entrar: ' + e.message);
+  }
+};
+window.esqueciSenha = async () => {
+  const email = (document.getElementById('lg-email').value || '').trim();
+  if (!email) { alert('Digite seu e-mail primeiro.'); return; }
+  try { await window.firebaseAuth.sendPasswordResetEmail(window.firebaseAuth.auth, email); alert('Se esse e-mail tiver acesso, chega um link para criar uma nova senha.'); }
+  catch (e) { alert('Erro: ' + e.message); }
+};
+window.sair = async () => { await window.firebaseAuth.signOut(window.firebaseAuth.auth); };
+function init() {
+  if (!window.firebaseReady || !window.authPronto) { setTimeout(init, 100); return; }
+  aoMudarAuth();
+  window.addEventListener('auth-changed', aoMudarAuth);
+}
+init();
+</script>
+
+</body>
+</html>

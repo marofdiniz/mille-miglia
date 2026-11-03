@@ -1,0 +1,24 @@
+name: Robô do mês
+on:
+  schedule:
+    - cron: "0 9 * * *"   # todo dia às 6h (horário de Brasília)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Só simular (não cria nada)"
+        type: boolean
+        default: true
+concurrency: gerar-mes
+jobs:
+  gerar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm install --omit=dev
+      - run: node gerar-mes.js
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          MESES_A_FRENTE: "1"
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '0' }}

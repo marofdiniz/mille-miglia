@@ -1,0 +1,9 @@
+rules_version = '2';
+// Anexos e documentos: só quem fez login no app.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
