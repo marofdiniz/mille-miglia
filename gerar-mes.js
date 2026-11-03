@@ -68,7 +68,10 @@ async function main() {
   const dry = process.env.DRY_RUN === "1";
   if (!process.env.FIREBASE_SERVICE_ACCOUNT) throw new Error("Falta o segredo FIREBASE_SERVICE_ACCOUNT.");
   const admin = require("firebase-admin");
-  admin.initializeApp({ credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)) });
+  let conta;
+  try { conta = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT.trim()); }
+  catch { throw new Error("O segredo FIREBASE_SERVICE_ACCOUNT não é um JSON válido. Abra o arquivo baixado do Firebase no Bloco de Notas e cole o conteúdo inteiro, começando em { e terminando em }."); }
+  admin.initializeApp({ credential: admin.credential.cert(conta) });
   const db = admin.firestore();
 
   const [despSnap, imSnap] = await Promise.all([db.collection("despesas").get(), db.collection("imoveis").get()]);
