@@ -9,11 +9,11 @@
 // Tudo fica em Firestore, coleção "cobrancas" (um documento por imóvel e mês). O app lê de lá
 // a linha digitável e o Pix copia e cola para mandar ao inquilino.
 //
-// Cada empresa tem o seu banco. Hoje: Explorer → C6 (bancos/c6.js).
+// Cada empresa tem o seu banco. Hoje: Explorer e Mille Miglia → C6 (bancos/c6.js).
 //
 // Variáveis de ambiente:
 //   FIREBASE_SERVICE_ACCOUNT  JSON da conta de serviço do Firebase
-//   EMPRESAS                  quais empresas cobrar e por qual banco, ex.: "Explorer=c6"
+//   EMPRESAS                  quais empresas cobrar e por qual banco, ex.: "Explorer=c6,Mille Miglia=c6"
 //   C6_EXPLORER_CLIENT_ID, C6_EXPLORER_CLIENT_SECRET, C6_EXPLORER_CERT, C6_EXPLORER_KEY
 //                             credenciais da API do C6 da Explorer
 //   DIAS_ANTES                (opcional) quantos dias antes do vencimento gerar (padrão 10)
