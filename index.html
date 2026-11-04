@@ -178,6 +178,11 @@ async function salvarImovel(im) {
       condominio_pago_por: im.condominio_pago_por, iptu: Number(im.iptu) || 0,
       iptu_pago_por: im.iptu_pago_por, taxa_adm: Number(im.taxa_adm) || 0,
       dia_vencimento: Number(im.dia_vencimento) || 1, status: im.status, obs: im.obs || "",
+      empresa: (im.empresa || "").trim(),
+      cobranca_auto: !!im.cobranca_auto,
+      inquilino_doc: im.inquilino_doc || "", inquilino_whatsapp: im.inquilino_whatsapp || "",
+      inquilino_email: im.inquilino_email || "",
+      cep: im.cep || "", cidade: im.cidade || "", uf: (im.uf || "").toUpperCase(),
     };
     if (im.id) await fb.updateDoc(fb.doc(fb.db, "imoveis", im.id), dados);
     else await fb.addDoc(fb.collection(fb.db, "imoveis"), dados);
@@ -928,7 +933,7 @@ function renderImoveis(d) {
               const badgeClass = im.status === 'ativo' ? 'badge-tranquilo' : im.status === 'vago' ? 'badge-vencido' : im.status === 'construcao' ? 'badge-proximo' : 'badge-pago';
               return `<tr class="${idx % 2 === 0 ? 'bg-amber-50/30' : ''}" style="border-bottom:1px solid #e8dfc9">
                 <td class="px-4 py-3">
-                  <div class="font-semibold" style="color:#1a3a2a">${escapeHtml(im.nome)}</div>
+                  <div class="font-semibold" style="color:#1a3a2a">${escapeHtml(im.nome)}</div>${im.empresa ? `<div class="text-xs text-stone-500">🏢 ${escapeHtml(im.empresa)}${im.cobranca_auto ? ' · 💳 cobrança automática' : ''}</div>` : ''}
                   <div class="text-xs text-stone-500">${escapeHtml(im.endereco)}</div>
                 </td>
                 <td class="px-4 py-3"><span class="pill" style="background:#f5f1e8;color:#5d4037">${escapeHtml(im.tipo)}</span></td>
@@ -1897,6 +1902,24 @@ function renderModalImovel() {
             <option value="proprio" ${im.status === 'proprio' ? 'selected' : ''}>Próprio (oculto do app)</option>
           </select>`)}
         </div>
+        ${field('Empresa dona do imóvel', `<input id="im-empresa" class="input" list="lista-empresas" placeholder="Ex.: Explorer" value="${escapeHtml(im.empresa || '')}"/>
+          <datalist id="lista-empresas">${[...new Set(state.imoveis.map(i => i.empresa).filter(Boolean))].map(e => `<option value="${escapeHtml(e)}">`).join('')}</datalist>`)}
+        <div class="rounded-lg p-4 space-y-3" style="background:#f5f1e8;border:1px solid #e8dfc9">
+          <label class="flex items-center gap-2 text-sm font-semibold" style="color:#1a3a2a">
+            <input id="im-cobranca" type="checkbox" ${im.cobranca_auto ? 'checked' : ''}/> 💳 Cobrança automática do aluguel (boleto + Pix pela conta da empresa)
+          </label>
+          <p class="text-xs text-stone-500">Dados do inquilino para o boleto e para mandar a cobrança.</p>
+          <div class="grid grid-cols-2 gap-3">
+            ${field('CPF ou CNPJ do inquilino', `<input id="im-doc" class="input" inputmode="numeric" value="${escapeHtml(im.inquilino_doc || '')}"/>`)}
+            ${field('WhatsApp do inquilino', `<input id="im-whats" class="input" inputmode="tel" placeholder="11 99999-9999" value="${escapeHtml(im.inquilino_whatsapp || '')}"/>`)}
+          </div>
+          ${field('E-mail do inquilino (opcional)', `<input id="im-email" type="email" class="input" value="${escapeHtml(im.inquilino_email || '')}"/>`)}
+          <div class="grid grid-cols-3 gap-3">
+            ${field('CEP do imóvel', `<input id="im-cep" class="input" inputmode="numeric" value="${escapeHtml(im.cep || '')}"/>`)}
+            ${field('Cidade', `<input id="im-cidade" class="input" value="${escapeHtml(im.cidade || '')}"/>`)}
+            ${field('UF', `<input id="im-uf" class="input" maxlength="2" value="${escapeHtml(im.uf || '')}"/>`)}
+          </div>
+        </div>
         ${field('Observações', `<textarea id="im-obs" class="input" rows="2">${escapeHtml(im.obs || '')}</textarea>`)}
       </div>
       <div class="flex justify-end gap-3 p-6 border-t" style="border-color:#e8dfc9">
@@ -2200,7 +2223,24 @@ window.confirmarSalvarImovel = () => {
     dia_vencimento: parseInt(document.getElementById('im-dia').value) || 1,
     status: document.getElementById('im-status').value,
     obs: document.getElementById('im-obs').value,
+    empresa: document.getElementById('im-empresa').value,
+    cobranca_auto: document.getElementById('im-cobranca').checked,
+    inquilino_doc: document.getElementById('im-doc').value.trim(),
+    inquilino_whatsapp: document.getElementById('im-whats').value.trim(),
+    inquilino_email: document.getElementById('im-email').value.trim(),
+    cep: document.getElementById('im-cep').value.trim(),
+    cidade: document.getElementById('im-cidade').value.trim(),
+    uf: document.getElementById('im-uf').value.trim(),
   };
+  if (im.cobranca_auto) {
+    const faltam = [];
+    if (!im.empresa) faltam.push('empresa');
+    if (!im.inquilino) faltam.push('nome do inquilino');
+    if (![11, 14].includes(im.inquilino_doc.replace(/\D/g, '').length)) faltam.push('CPF/CNPJ');
+    if (im.cep.replace(/\D/g, '').length !== 8) faltam.push('CEP');
+    if (!im.cidade || im.uf.length !== 2) faltam.push('cidade/UF');
+    if (faltam.length && !confirm('Para a cobrança automática ainda falta: ' + faltam.join(', ') + '.\n\nSalvar assim mesmo? (o robô pula esse imóvel até completar)')) return;
+  }
   salvarImovel(im);
 };
 
