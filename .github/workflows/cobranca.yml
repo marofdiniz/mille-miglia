@@ -1,0 +1,33 @@
+name: Cobrança automática
+on:
+  # Desligado até a integração com o C6 ficar pronta. Para ligar, tirar o # das duas linhas abaixo.
+  # schedule:
+  #   - cron: "15 10,13,16,19,22 * * *"   # 7h15 a 19h15 (Brasília)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Só simular (não gera nem cancela nada)"
+        type: boolean
+        default: true
+concurrency: cobranca
+jobs:
+  cobrar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --omit=dev
+      - run: node cobranca.js
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          EMPRESAS: "Explorer=c6"
+          C6_EXPLORER_CLIENT_ID: ${{ secrets.C6_EXPLORER_CLIENT_ID }}
+          C6_EXPLORER_CLIENT_SECRET: ${{ secrets.C6_EXPLORER_CLIENT_SECRET }}
+          C6_EXPLORER_CERT: ${{ secrets.C6_EXPLORER_CERT }}
+          C6_EXPLORER_KEY: ${{ secrets.C6_EXPLORER_KEY }}
+          DIAS_ANTES: "10"
+          MULTA_PERCENTUAL: "2"
+          JUROS_MES_PERCENTUAL: "1"
+          # Sempre simulação até a integração com o C6 ficar pronta.
+          DRY_RUN: "1"
