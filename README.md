@@ -1,4 +1,4 @@
-# Mille Miglia – Gestão de Imóveis
+# PJ Gestão de Imóveis
 
 App em um arquivo só (`index.html`) com dados no Firebase (projeto `mille-miglia-32367`).
 
