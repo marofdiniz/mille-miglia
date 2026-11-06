@@ -22,3 +22,14 @@ test("mês seguinte inclui os dois imóveis", () => {
   assert.deepStrictEqual(n.map(x => x.tipo).sort(), ["Condomínio", "IPTU"]);
 });
 test("virada de ano", () => assert.deepStrictEqual(somarMes({ mes: 12, ano: 2026 }, 1), { mes: 1, ano: 2027 }));
+test("robô carrega as regras de parcelas do index.html", () => {
+  const fs = require("fs"), path = require("path");
+  const html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
+  const bloco = html.split("// === FINANCEIRO (início) ===")[1].split("// === FINANCEIRO (fim) ===")[0];
+  const F = new Function("module", bloco + "\nreturn Financeiro;")({});
+  assert.strictEqual(typeof F.planejarParcelas, "function");
+});
+test("despesa geral da empresa e categoria seguem no robô", () => {
+  const n = planejarMes([{ imovel: "Geral", tipo: "Sistema", mes: 10, ano: 2026, valor: 99, recorrente: true, categoria: "desp_fixas" }], im, { mes: 11, ano: 2026 });
+  assert.deepStrictEqual(n.map(x => [x.imovel, x.categoria]), [["Geral", "desp_fixas"]]);
+});

@@ -6,8 +6,9 @@
 //     imóvel + tipo como modelo (valor, dia do vencimento, quem paga);
 //   - cria a despesa do mês como "pendente" e com "confirmar valor" ligado;
 //   - nunca duplica: se já existe despesa daquele imóvel + tipo no mês, pula.
-// Os aluguéis não são criados aqui: eles entram como receita quando o dinheiro
-// cai (pela conferência do extrato no app).
+// Também cria as parcelas a receber dos contratos de locação (aba Contratos do app),
+// com a mesma regra do botão "🔄 Gerar parcelas": id fixo contrato + mês, nunca duplica.
+// A receita só entra quando o dinheiro cai (conferência do extrato ou "Receber" no app).
 //
 // Variáveis de ambiente:
 //   FIREBASE_SERVICE_ACCOUNT  JSON da conta de serviço do Firebase (projeto mille-miglia-32367)
@@ -42,7 +43,7 @@ function modelosRecorrentes(despesas) {
 // Lista as despesas que faltam criar no mês/ano (mesma regra do botão do app).
 function planejarMes(despesas, imoveis, { mes, ano }) {
   // imóvel apagado do app não gera mais despesa
-  const existentes = new Set(imoveis.map(i => i.nome));
+  const existentes = new Set(imoveis.map(i => i.nome).concat(["Geral"]));
   const novas = [];
   for (const r of modelosRecorrentes(despesas)) {
     if (imoveis.length && !existentes.has(r.imovel)) continue;
@@ -56,12 +57,21 @@ function planejarMes(despesas, imoveis, { mes, ano }) {
       valor: Number(r.valor) || 0,
       status: "pendente",
       pago_por: r.pago_por || "proprietario",
+      ...(r.categoria ? { categoria: r.categoria } : {}),
       recorrente: false,
       confirmar_valor: true,
       criado_por: "robo",
     });
   }
   return novas;
+}
+
+// As regras de parcelas moram no index.html (bloco FINANCEIRO), para o app e o robô fazerem igual.
+function carregarFinanceiro() {
+  const fs = require("fs"), path = require("path");
+  const html = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
+  const bloco = html.split("// === FINANCEIRO (início) ===")[1].split("// === FINANCEIRO (fim) ===")[0];
+  return new Function("module", bloco + "\nreturn Financeiro;")({});
 }
 
 async function main() {
@@ -93,6 +103,28 @@ async function main() {
     }
   }
   console.log(dry ? `Simulação: criaria ${total} despesa(s).` : `Pronto: ${total} despesa(s) criada(s).`);
+
+  // Parcelas a receber dos contratos de locação
+  const F = carregarFinanceiro();
+  const [conSnap, parSnap] = await Promise.all([db.collection("contratos").get(), db.collection("parcelas").get()]);
+  const contratos = conSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const parcelas = parSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  let nParc = 0;
+  for (let i = 0; i <= aFrente; i++) {
+    const alvo = somarMes(hoje, i);
+    const novas = F.planejarParcelas(contratos, parcelas, alvo);
+    console.log(`${String(alvo.mes).padStart(2, "0")}/${alvo.ano}: ${novas.length} parcela(s) a receber a criar`);
+    for (const { id, ...p } of novas) {
+      console.log(`  • ${p.descricao} – ${p.imovel} – vence ${p.vencimento} – R$ ${p.valor.toFixed(2)}`);
+      if (!dry) {
+        try { await db.collection("parcelas").doc(id).create({ ...p, criado_por: "robo", criado_em: admin.firestore.FieldValue.serverTimestamp() }); }
+        catch (e) { if (e.code !== 6) throw e; } // 6 = já existe (o app criou antes)
+      }
+      parcelas.push({ id, ...p });
+      nParc++;
+    }
+  }
+  console.log(dry ? `Simulação: criaria ${nParc} parcela(s).` : `Pronto: ${nParc} parcela(s) criada(s).`);
 }
 
 module.exports = { planejarMes, modelosRecorrentes, somarMes };

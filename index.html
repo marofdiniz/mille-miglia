@@ -56,7 +56,7 @@ body { font-family: 'Manrope', sans-serif; margin: 0; background: linear-gradien
 <script type="module">
 // === FIREBASE ===
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject, listAll } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-storage.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
@@ -72,7 +72,7 @@ const firebaseConfig = {
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp);
 
-window.firebaseDB = { db, collection, getDocs, addDoc, updateDoc, deleteDoc, doc };
+window.firebaseDB = { db, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, setDoc };
 const storage = getStorage(fbApp);
 window.firebaseStorage = { storage, ref, uploadBytes, getDownloadURL, deleteObject, listAll };
 const auth = getAuth(fbApp);
@@ -120,6 +120,19 @@ const state = {
   anexosCount: {},
   uploadProgresso: false,
   modalExtrato: null, // { arquivo, linhas, erro, salvando }
+  // Financeiro da imobiliária: cadastros, contratos e parcelas a receber
+  pessoas: [],    // proprietários, inquilinos, compradores, corretores
+  contratos: [],  // locação (gera parcela todo mês) ou venda (comissão parcelada)
+  parcelas: [],   // contas a receber geradas pelos contratos
+  subContratos: 'contratos',
+  subRel: 'geral',
+  filtroReceber: 'pendentes',
+  relAno: new Date().getFullYear(),
+  relMes: 0,
+  relProprietario: '',
+  modalPessoa: null,
+  modalContrato: null,
+  modalBaixa: null,
 };
 
 // === ÍCONES SVG ===
@@ -149,11 +162,17 @@ async function carregarDados() {
   render();
   try {
     const fb = window.firebaseDB;
-    const [imSnap, recSnap, despSnap] = await Promise.all([
+    const [imSnap, recSnap, despSnap, pesSnap, conSnap, parSnap] = await Promise.all([
       fb.getDocs(fb.collection(fb.db, "imoveis")),
       fb.getDocs(fb.collection(fb.db, "receitas")),
       fb.getDocs(fb.collection(fb.db, "despesas")),
+      fb.getDocs(fb.collection(fb.db, "pessoas")),
+      fb.getDocs(fb.collection(fb.db, "contratos")),
+      fb.getDocs(fb.collection(fb.db, "parcelas")),
     ]);
+    state.pessoas = pesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    state.contratos = conSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    state.parcelas = parSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     state.imoveis = imSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     state.receitas = recSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.ano - a.ano) || (b.mes - a.mes));
     state.despesas = despSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.ano - a.ano) || (b.mes - a.mes));
@@ -209,6 +228,7 @@ async function salvarDespesa(d) {
       pago_por: d.pago_por || 'proprietario',
       recorrente: !!d.recorrente,
       confirmar_valor: !!d.confirmar_valor,
+      categoria: d.categoria || Financeiro.categoriaDespesa(d),
     };
     let novoId = d.id;
     let ehNova = false;
@@ -376,7 +396,7 @@ async function marcarPaga(id, statusAtual) {
 async function salvarReceita(r) {
   try {
     const fb = window.firebaseDB;
-    const dados = { imovel: r.imovel, mes: Number(r.mes), ano: Number(r.ano), valor: Number(r.valor) };
+    const dados = { imovel: r.imovel, mes: Number(r.mes), ano: Number(r.ano), valor: Number(r.valor), categoria: r.categoria || Financeiro.categoriaReceita(r) };
     let novoId = r.id;
     let ehNova = false;
     if (r.id) {
@@ -521,11 +541,14 @@ function getDados() {
   if (mesAnt === 0) { mesAnt = 12; anoAnt = anoAtual - 1; }
 
   const imoveisProprios = state.imoveis.filter(i => i.status === "proprio").map(i => i.nome);
-  const receitasAtivas = state.receitas.filter(r => !imoveisProprios.includes(r.imovel));
-  const despesasAtivas = state.despesas.filter(d => !imoveisProprios.includes(d.imovel));
+  // Dinheiro de terceiros (aluguel de imóvel administrado e repasse ao proprietário) fica fora do caixa da empresa:
+  // aparece só em Contas › Terceiros.
+  const receitasAtivas = state.receitas.filter(r => !imoveisProprios.includes(r.imovel) && !Financeiro.ehTerceiros(r, false));
+  const despesasAtivas = state.despesas.filter(d => !imoveisProprios.includes(d.imovel) && !Financeiro.ehTerceiros(d, true));
   const imoveisAtivos = state.imoveis.filter(i => i.status !== "proprio");
 
-  const proximosVencimentos = despesasAtivas
+  // Repasse ao proprietário também é conta a pagar, então entra nos vencimentos (mas não nos totais da empresa).
+  const proximosVencimentos = state.despesas.filter(d => !imoveisProprios.includes(d.imovel))
     .filter(d => d.status === "pendente")
     .map(d => {
       const data = new Date(d.ano, d.mes - 1, d.dia_venc);
@@ -601,7 +624,9 @@ function getDados() {
   // Alertas inteligentes: imóvel ativo (alugado) sem aluguel cadastrado este mês
   const alertasInteligentes = [];
   imoveisAtivos.forEach(im => {
-    if (im.status === 'ativo' && im.inquilino) {
+    // imóvel com contrato de locação é acompanhado em Contas › A receber
+    const temContrato = state.contratos.some(c => c.imovel === im.nome && Financeiro.locacaoNoMes(c, { mes: mesAtual, ano: anoAtual }));
+    if (im.status === 'ativo' && im.inquilino && !temContrato) {
       const temAluguel = receitasAtivas.find(r => r.imovel === im.nome && r.mes === mesAtual && r.ano === anoAtual);
       if (!temAluguel) {
         alertasInteligentes.push({ tipo: 'aluguel_faltando', imovel: im.nome, msg: `Aluguel de ${im.nome} (inquilino ${im.inquilino}) não foi cadastrado este mês` });
@@ -645,9 +670,12 @@ function render() {
     html += renderSubAbas();
     if (state.subAba === 'receitas') html += renderReceitas(d);
     else if (state.subAba === 'despesas') html += renderDespesas(d);
+    else if (state.subAba === 'receber') html += renderReceber(d);
+    else if (state.subAba === 'terceiros') html += renderTerceiros(d);
     else html += renderVencimentos(d);
   }
-  else if (state.aba === 'relatorios') html += renderComparativo(d) + renderGraficos(d);
+  else if (state.aba === 'contratos') html += renderContratos(d);
+  else if (state.aba === 'relatorios') html += renderRelatorios(d);
 
   if (state.modalImovel) html += renderModalImovel();
   if (state.modalDespesa) html += renderModalDespesa(d);
@@ -657,6 +685,9 @@ function render() {
   if (state.modalDocumentos) html += renderModalDocumentos();
   if (state.modalGerarRecorrentes) html += renderModalGerarRecorrentes();
   if (state.modalExtrato) html += renderModalExtrato();
+  if (state.modalPessoa) html += renderModalPessoa();
+  if (state.modalContrato) html += renderModalContrato();
+  if (state.modalBaixa) html += renderModalBaixa();
 
   root.innerHTML = html;
 }
@@ -666,6 +697,7 @@ function renderHeader() {
     { id: 'dashboard', label: 'Início', icon: icons.home },
     { id: 'lancamentos', label: 'Contas', icon: icons.dollar },
     { id: 'imoveis', label: 'Imóveis', icon: icons.building.replace('width="24" height="24"', 'width="20" height="20"') },
+    { id: 'contratos', label: 'Contratos', icon: icons.file },
     { id: 'relatorios', label: 'Relatórios', icon: icons.trending },
   ];
   return `
@@ -774,6 +806,8 @@ function renderDashboard(d) {
           </div>
         </div>
 
+        ${renderResumoFinanceiro(d)}
+
         <div class="card rounded-xl p-6">
           <div class="flex items-baseline justify-between mb-4">
             <h3 class="titulo-serif text-2xl font-bold" style="color:#1a3a2a">Projeção de despesas</h3>
@@ -862,6 +896,23 @@ function renderDashboard(d) {
       </div>
     </main>
   `;
+}
+
+// Linha do Início com contas a receber, atrasos e conta de terceiros (só aparece quando há contratos).
+function renderResumoFinanceiro(d) {
+  if (!state.contratos.length) return '';
+  const k = Financeiro.chaveMes(d.anoAtual, d.mesAtual);
+  const aReceber = state.parcelas.filter(p => p.status === 'pendente' && Financeiro.chaveMes(p.ano, p.mes) === k);
+  const inad = Financeiro.inadimplencia(state.parcelas, hojeISO());
+  const ter = Financeiro.contaTerceiros(state.receitas, state.despesas);
+  const com = Financeiro.comissoes(state.despesas, state.pessoas).reduce((s, c) => s + c.aPagar, 0);
+  const item = (rot, v, sub, cor, acao) => `<button onclick="${acao}" class="card rounded-xl p-5 hover-lift text-left"><div class="text-xs uppercase tracking-widest text-stone-500 font-semibold mb-2">${rot}</div><div class="titulo-serif text-2xl font-bold num-mono" style="color:${cor}">${formatBRL(v)}</div><div class="text-xs text-stone-500 mt-1">${sub}</div></button>`;
+  return `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+    ${item(`A receber · ${MESES[d.mesAtual - 1]}`, aReceber.reduce((s, p) => s + p.valor, 0), `${aReceber.length} parcela(s) dos contratos`, '#1a4d3a', "setAba('lancamentos');setSubAba('receber')")}
+    ${item('Em atraso', inad.total, `${inad.lista.length} parcela(s) vencida(s)`, inad.total ? '#c62828' : '#1a4d3a', "setAba('relatorios');setSubRel('inadimplencia')")}
+    ${item('Conta de terceiros', ter.saldo, `${formatBRL(ter.aRepassar)} a repassar`, '#1e3a5f', "setAba('lancamentos');setSubAba('terceiros')")}
+    ${item('Comissões a pagar', com, 'corretores', com ? '#8b3a3a' : '#1a4d3a', "setAba('relatorios');setSubRel('comissoes')")}
+  </div>`;
 }
 
 function renderLineChart(data) {
@@ -1126,7 +1177,7 @@ function renderReceitas(d) {
           </thead>
           <tbody>
             ${receitasFiltradas.map((r, idx) => `<tr class="${idx % 2 === 0 ? 'bg-amber-50/30' : ''}" style="border-bottom:1px solid #e8dfc9">
-              <td class="px-4 py-3 font-semibold" style="color:#1a3a2a">${escapeHtml(r.imovel)}</td>
+              <td class="px-4 py-3"><div class="font-semibold" style="color:#1a3a2a">${escapeHtml(r.imovel)}</div><div class="mt-1">${pillCategoria(Financeiro.categoriaReceita(r))}</div></td>
               <td class="px-4 py-3 text-center num-mono">${MESES[r.mes-1]}/${r.ano}</td>
               <td class="px-4 py-3 text-right num-mono accent font-semibold">${formatBRL(r.valor)}</td>
               <td class="px-4 py-3"><div class="flex gap-2 justify-end items-center">
@@ -1188,6 +1239,7 @@ function renderDespesas(d) {
               <td class="px-4 py-3 font-semibold" style="color:#1a3a2a">${escapeHtml(dx.imovel)}</td>
               <td class="px-4 py-3">
                 <div class="text-stone-700 flex items-center gap-2 flex-wrap">${escapeHtml(dx.tipo)}
+                  ${pillCategoria(Financeiro.categoriaDespesa(dx))}
                   ${dx.recorrente ? '<span class="pill" style="background:#e0e7ff;color:#3730a3;border:1px solid #a5b4fc" title="Despesa recorrente">🔄</span>' : ''}
                   ${dx.pago_por === 'inquilino' ? '<span class="pill" style="background:#dbeafe;color:#1e3a5f;border:1px solid #93c5fd">🏠 Inquilino</span>' : '<span class="pill" style="background:#fef3c7;color:#854d0e;border:1px solid #fde68a">👤 Proprietário</span>'}
                   ${dx.confirmar_valor ? '<span class="pill" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d;animation:pulse 2s infinite" title="Confirme o valor — gerada automaticamente">⚠️ Confirmar valor</span>' : ''}
@@ -1932,7 +1984,7 @@ function renderModalImovel() {
 
 function renderModalDespesa(d) {
   const dx = state.modalDespesa;
-  const opcoesImoveis = d.imoveisAtivos.map(i => `<option value="${escapeHtml(i.nome)}" ${dx.imovel === i.nome ? 'selected' : ''}>${escapeHtml(i.nome)}</option>`).join('') + `<option value="Consórcio Embracon" ${dx.imovel === 'Consórcio Embracon' ? 'selected' : ''}>Consórcio Embracon</option>`;
+  const opcoesImoveis = d.imoveisAtivos.map(i => `<option value="${escapeHtml(i.nome)}" ${dx.imovel === i.nome ? 'selected' : ''}>${escapeHtml(i.nome)}</option>`).join('') + `<option value="Consórcio Embracon" ${dx.imovel === 'Consórcio Embracon' ? 'selected' : ''}>Consórcio Embracon</option>` + `<option value="Geral" ${dx.imovel === 'Geral' ? 'selected' : ''}>Geral da empresa (folha, sistemas, marketing...)</option>`;
   // Sugestões: padrão + categorias já usadas em despesas anteriores
   const tiposPadrao = ['Condomínio','IPTU','Taxa ADM','Carnê Leão','Internet','Luz','Água','Financiamento','Consórcio','Manutenção','Seguro','Reforma','Outros'];
   const tiposUsados = [...new Set(state.despesas.map(d => d.tipo).filter(t => t))];
@@ -1956,6 +2008,7 @@ function renderModalDespesa(d) {
           ${field('Valor (R$)', `<input id="dp-valor" type="number" step="0.01" class="input" value="${dx.valor || 0}"/>`)}
           ${field('Status', `<select id="dp-status" class="input"><option value="pendente" ${dx.status === 'pendente' ? 'selected' : ''}>Pendente</option><option value="pago" ${dx.status === 'pago' ? 'selected' : ''}>Pago</option></select>`)}
         </div>
+        ${field('Conta (plano de contas)', `<select id="dp-categoria" class="input"><option value="">Automático pelo tipo${dx.tipo ? ' (' + escapeHtml(Financeiro.conta(Financeiro.categoriaDespesa({ tipo: dx.tipo })).nome) + ')' : ''}</option>${opcoesCategoria('despesa', dx.categoria)}</select>`)}
         ${field('Pago por', `<select id="dp-pagopor" class="input">
           <option value="proprietario" ${(dx.pago_por || 'proprietario') === 'proprietario' ? 'selected' : ''}>👤 Proprietário</option>
           <option value="inquilino" ${dx.pago_por === 'inquilino' ? 'selected' : ''}>🏠 Inquilino</option>
@@ -1996,6 +2049,7 @@ function renderModalReceita(d) {
           ${field('Ano', `<input id="rc-ano" type="number" class="input" value="${r.ano || HOJE.getFullYear()}"/>`)}
         </div>
         ${field('Valor recebido (R$)', `<input id="rc-valor" type="number" step="0.01" class="input" value="${r.valor || 0}"/>`)}
+        ${field('Conta (plano de contas)', `<select id="rc-categoria" class="input">${opcoesCategoria('receita', Financeiro.categoriaReceita(r))}</select>`)}
       </div>
       <div class="flex justify-end gap-3 p-6 border-t" style="border-color:#e8dfc9">
         <button onclick="fecharModais()" class="px-5 py-2 rounded-md text-sm font-semibold text-stone-700 hover:bg-stone-100">Cancelar</button>
@@ -2022,11 +2076,13 @@ function renderSubAbas() {
   const pend = getDados().proximosVencimentos.length;
   const subs = [
     { id: 'pendentes', label: 'A pagar', extra: pend ? ` <span class="ml-1 px-1.5 rounded-full text-xs" style="background:#fed7aa;color:#9a3412">${pend}</span>` : '' },
+    { id: 'receber', label: 'A receber', extra: (() => { const v = state.parcelas.filter(p => p.status === 'pendente' && p.vencimento < hojeISO()).length; return v ? ` <span class="ml-1 px-1.5 rounded-full text-xs" style="background:#fee2e2;color:#991b1b">${v}</span>` : ''; })() },
     { id: 'despesas', label: 'Despesas', extra: '' },
     { id: 'receitas', label: 'Receitas', extra: '' },
+    { id: 'terceiros', label: 'Terceiros', extra: '' },
   ];
   return `<div class="max-w-7xl mx-auto px-6 pt-6 flex items-center justify-between flex-wrap gap-3">
-    <div class="inline-flex rounded-lg p-1 gap-1" style="background:#ede4d3">
+    <div class="inline-flex rounded-lg p-1 gap-1 flex-wrap" style="background:#ede4d3">
       ${subs.map(x => `<button onclick="setSubAba('${x.id}')" class="px-4 py-2 rounded-md text-sm font-semibold whitespace-nowrap" style="${state.subAba === x.id ? 'background:#fdfbf6;color:#1a3a2a;box-shadow:0 1px 2px rgba(0,0,0,.08)' : 'color:#5d4037'}">${x.label}${x.extra}</button>`).join('')}
     </div>
     <button onclick="abrirModalExtrato()" class="px-4 py-2 rounded-lg font-semibold text-sm hover-lift" style="background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0">🏦 Conferir extrato</button>
@@ -2260,6 +2316,7 @@ window.confirmarSalvarDespesa = () => {
     pago_por: document.getElementById('dp-pagopor').value,
     recorrente: recEl ? recEl.checked : false,
     confirmar_valor: false, // editou = confirmou
+    categoria: (document.getElementById('dp-categoria') || {}).value || '',
   };
   if (!d.tipo) { alert('Digite o tipo da despesa'); return; }
   salvarDespesa(d);
@@ -2274,6 +2331,7 @@ window.confirmarSalvarReceita = () => {
     mes: parseInt(document.getElementById('rc-mes').value),
     ano: parseInt(document.getElementById('rc-ano').value) || HOJE.getFullYear(),
     valor: parseFloat(document.getElementById('rc-valor').value) || 0,
+    categoria: (document.getElementById('rc-categoria') || {}).value || '',
   };
   salvarReceita(r);
 };
@@ -2410,6 +2468,300 @@ window.exportarRelatorioPDF = () => {
   // Usa o print do navegador (que vai gerar PDF se a pessoa escolher "Salvar como PDF")
   window.print();
 };
+
+// === FINANCEIRO (início) ===
+// Regras de dinheiro da imobiliária, sem tela e sem Firebase (o robô do mês e os testes usam este mesmo bloco).
+//   • Plano de contas por natureza (locação, venda, outras; impostos, comissões, marketing, fixas...)
+//   • Parcelas a receber geradas pelos contratos (aluguel todo mês, comissão de venda parcelada)
+//   • Baixa de parcela: o que vira receita da empresa e o que é dinheiro de terceiros (repasse ao proprietário)
+//   • Relatórios: DRE, fluxo de caixa, conta de terceiros, inadimplência, comissões, extrato do proprietário
+const Financeiro = (() => {
+  const PLANO = [
+    { id: 'rec_aluguel',    cod: '1.1', grupo: 'receita',   natureza: 'locacao',  nome: 'Aluguel de imóvel próprio' },
+    { id: 'rec_adm',        cod: '1.2', grupo: 'receita',   natureza: 'locacao',  nome: 'Taxa de administração' },
+    { id: 'rec_1locacao',   cod: '1.3', grupo: 'receita',   natureza: 'locacao',  nome: 'Taxa da 1ª locação' },
+    { id: 'rec_venda',      cod: '1.4', grupo: 'receita',   natureza: 'venda',    nome: 'Comissão de venda (intermediação)' },
+    { id: 'rec_vistoria',   cod: '1.5', grupo: 'receita',   natureza: 'outras',   nome: 'Vistoria e laudos' },
+    { id: 'rec_outras',     cod: '1.9', grupo: 'receita',   natureza: 'outras',   nome: 'Outras receitas' },
+    { id: 'desp_impostos',  cod: '2.1', grupo: 'despesa',   natureza: 'impostos', nome: 'Impostos' },
+    { id: 'desp_corretor',  cod: '2.2', grupo: 'despesa',   natureza: 'comissoes', nome: 'Comissão de corretores' },
+    { id: 'desp_marketing', cod: '2.3', grupo: 'despesa',   natureza: 'marketing', nome: 'Marketing e portais' },
+    { id: 'desp_fixas',     cod: '2.4', grupo: 'despesa',   natureza: 'fixas',    nome: 'Fixas (aluguel, folha, sistemas)' },
+    { id: 'desp_imovel',    cod: '2.5', grupo: 'despesa',   natureza: 'imoveis',  nome: 'Custos dos imóveis (condomínio, IPTU, manutenção)' },
+    { id: 'desp_financeiro',cod: '2.6', grupo: 'despesa',   natureza: 'financeiro', nome: 'Financiamento e consórcio' },
+    { id: 'desp_outras',    cod: '2.9', grupo: 'despesa',   natureza: 'outras',   nome: 'Outras despesas' },
+    { id: 'ter_recebido',   cod: '3.1', grupo: 'terceiros', natureza: 'terceiros', nome: 'Recebido do inquilino (dinheiro do proprietário)' },
+    { id: 'ter_repasse',    cod: '3.2', grupo: 'terceiros', natureza: 'terceiros', nome: 'Repasse ao proprietário' },
+  ];
+  const NATUREZAS = {
+    locacao: 'Locação', venda: 'Venda', outras: 'Outras', impostos: 'Impostos', comissoes: 'Comissões',
+    marketing: 'Marketing e portais', fixas: 'Despesas fixas', imoveis: 'Custos dos imóveis', financeiro: 'Financeiro', terceiros: 'Terceiros',
+  };
+  const conta = id => PLANO.find(p => p.id === id);
+  const semAcento = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const r2 = v => Math.round((Number(v) || 0) * 100) / 100;
+  const pad = n => String(n).padStart(2, '0');
+  const chaveMes = (ano, mes) => `${ano}-${pad(mes)}`;
+  const somarMes = ({ mes, ano }, n) => { const t = ano * 12 + (mes - 1) + n; return { mes: (t % 12) + 1, ano: Math.floor(t / 12) }; };
+  const ultimoDia = (ano, mes) => new Date(ano, mes, 0).getDate();
+  const diaNoMes = (ano, mes, dia) => Math.min(Math.max(1, Number(dia) || 1), ultimoDia(ano, mes));
+
+  // Lançamentos antigos não têm categoria: deduz pelo tipo da despesa (ou "aluguel" para receitas).
+  function categoriaDespesa(d) {
+    if (d.categoria && conta(d.categoria)) return d.categoria;
+    const t = semAcento(d.tipo);
+    if (/comiss|corretor/.test(t)) return 'desp_corretor';
+    if (/carne.?leao|imposto|irpj|csll|cofins|\bpis\b|\biss\b|\bdas\b|simples/.test(t)) return 'desp_impostos';
+    if (/marketing|portal|anuncio|zap|viva ?real|olx|propaganda/.test(t)) return 'desp_marketing';
+    if (/financ|consorcio|emprestimo/.test(t)) return 'desp_financeiro';
+    if (/condom|iptu|manuten|reforma|seguro|\bluz\b|energia|agua|internet|\bgas\b|taxa adm|vistoria|pintura|limpeza/.test(t)) return 'desp_imovel';
+    if (/folha|salario|sistema|software|contador|contabil|aluguel|escritorio|telefone/.test(t)) return 'desp_fixas';
+    return 'desp_outras';
+  }
+  function categoriaReceita(r) {
+    if (r.categoria && conta(r.categoria)) return r.categoria;
+    return r.terceiros ? 'ter_recebido' : 'rec_aluguel';
+  }
+  const ehTerceiros = (x, ehDespesa) => !!x.terceiros || (ehDespesa ? categoriaDespesa(x) : categoriaReceita(x)).startsWith('ter_');
+  // Despesa que o inquilino paga direto não sai do caixa da empresa.
+  const despesaDaEmpresa = d => !ehTerceiros(d, true) && d.pago_por !== 'inquilino';
+
+  // Contrato de locação ativo no mês?
+  function locacaoNoMes(c, { mes, ano }) {
+    if (c.tipo !== 'locacao' || c.ativo === false) return false;
+    const k = chaveMes(ano, mes);
+    if (c.inicio && k < c.inicio) return false;
+    if (c.fim && k > c.fim) return false;
+    return true;
+  }
+
+  // Parcelas de aluguel que faltam no mês (id fixo por contrato + mês, então nunca duplica).
+  function planejarParcelas(contratos, parcelas, alvo) {
+    const existentes = new Set(parcelas.map(p => p.id));
+    const novas = [];
+    for (const c of contratos) {
+      if (!locacaoNoMes(c, alvo)) continue;
+      const id = `${c.id}_${chaveMes(alvo.ano, alvo.mes)}`;
+      if (existentes.has(id)) continue;
+      const aluguel = r2(c.aluguel), encargos = r2(c.encargos);
+      if (aluguel + encargos <= 0) continue;
+      const dia = diaNoMes(alvo.ano, alvo.mes, c.dia_vencimento);
+      const itens = [{ descricao: 'Aluguel', valor: aluguel }];
+      if (encargos > 0) itens.push({ descricao: c.encargos_desc || 'Encargos (condomínio/IPTU)', valor: encargos });
+      novas.push({
+        id, contrato_id: c.id, tipo: 'locacao', imovel: c.imovel || '', empresa: c.empresa || '',
+        cliente_id: c.cliente_id || '', cliente_nome: c.cliente_nome || '',
+        proprietario_id: c.terceiros ? (c.proprietario_id || '') : '', terceiros: !!c.terceiros,
+        descricao: `Aluguel ${pad(alvo.mes)}/${alvo.ano}`,
+        mes: alvo.mes, ano: alvo.ano, dia_venc: dia, vencimento: `${chaveMes(alvo.ano, alvo.mes)}-${pad(dia)}`,
+        valor: r2(aluguel + encargos), itens, status: 'pendente',
+      });
+    }
+    return novas;
+  }
+
+  // Comissão de uma venda dividida em parcelas mensais a partir do 1º vencimento.
+  function parcelasVenda(c) {
+    const total = r2((Number(c.valor_venda) || 0) * (Number(c.comissao_pct) || 0) / 100);
+    const n = Math.max(1, parseInt(c.parcelas) || 1);
+    if (total <= 0) return [];
+    const [a0, m0, d0] = String(c.primeiro_venc || '').split('-').map(Number);
+    const base = a0 && m0 ? { ano: a0, mes: m0 } : null;
+    if (!base) return [];
+    const cada = Math.floor(total / n * 100) / 100;
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      const { mes, ano } = somarMes(base, i);
+      const dia = diaNoMes(ano, mes, d0);
+      const valor = i === n - 1 ? r2(total - cada * (n - 1)) : cada;
+      out.push({
+        id: `${c.id}_p${i + 1}`, contrato_id: c.id, tipo: 'venda', imovel: c.imovel || '', empresa: c.empresa || '',
+        cliente_id: c.cliente_id || '', cliente_nome: c.cliente_nome || '', proprietario_id: '', terceiros: false,
+        descricao: `Comissão de venda ${i + 1}/${n}`, numero: i + 1, de: n,
+        mes, ano, dia_venc: dia, vencimento: `${chaveMes(ano, mes)}-${pad(dia)}`,
+        valor, itens: [{ descricao: 'Comissão de venda', valor }], status: 'pendente',
+      });
+    }
+    return out;
+  }
+
+  // Ao receber uma parcela: o que gravar em receitas e em despesas.
+  //   Imóvel próprio → receita de aluguel da empresa.
+  //   Imóvel de terceiro → entrada na conta de terceiros, taxa (adm ou 1ª locação) vira receita da empresa
+  //                        e o resto vira um repasse a pagar ao proprietário.
+  //   Venda → comissão vira receita e a parte do corretor vira comissão a pagar.
+  function baixaParcela(p, c, { data, valor }) {
+    c = c || {};
+    const [ano, mes, dia] = String(data).split('-').map(Number);
+    const pago = r2(valor ?? p.valor);
+    const ref = { parcela_id: p.id, contrato_id: p.contrato_id || '', imovel: p.imovel || '', mes, ano, recebido_em: data, origem: 'parcela' };
+    const receitas = [], despesas = [];
+    if (p.tipo === 'venda') {
+      receitas.push({ ...ref, categoria: 'rec_venda', valor: pago });
+      const pct = Number(c.corretor_pct) || 0;
+      if (c.corretor_id && pct > 0) {
+        despesas.push({
+          imovel: p.imovel || '', tipo: 'Comissão de corretor', categoria: 'desp_corretor', corretor_id: c.corretor_id,
+          mes, ano, dia_venc: dia, valor: r2(pago * pct / 100), status: 'pendente', pago_por: 'empresa',
+          recorrente: false, confirmar_valor: false, parcela_id: p.id, contrato_id: p.contrato_id || '', origem: 'parcela',
+        });
+      }
+      return { receitas, despesas };
+    }
+    if (!p.terceiros) {
+      receitas.push({ ...ref, categoria: 'rec_aluguel', valor: pago });
+      return { receitas, despesas };
+    }
+    // Locação de terceiro: a taxa incide só sobre o aluguel (não sobre condomínio/IPTU cobrados junto).
+    receitas.push({ ...ref, categoria: 'ter_recebido', terceiros: true, valor: pago, proprietario_id: p.proprietario_id || '' });
+    const aluguelPrev = r2((p.itens || []).filter(i => i.descricao === 'Aluguel').reduce((s, i) => s + i.valor, 0)) || p.valor;
+    const baseTaxa = p.valor > 0 ? r2(pago * aluguelPrev / p.valor) : pago;
+    const primeira = !!c.inicio && chaveMes(p.ano, p.mes) === c.inicio && (Number(c.taxa_1a_pct) || 0) > 0;
+    const taxaPct = primeira ? Number(c.taxa_1a_pct) : (Number(c.taxa_adm_pct) || 0);
+    const taxa = r2(baseTaxa * taxaPct / 100);
+    if (taxa > 0) receitas.push({ ...ref, categoria: primeira ? 'rec_1locacao' : 'rec_adm', valor: taxa, retida: true });
+    const repasse = r2(pago - taxa);
+    if (repasse > 0) {
+      const venc = somarMes({ mes, ano }, (Number(c.dia_repasse) || 0) && Number(c.dia_repasse) < dia ? 1 : 0);
+      despesas.push({
+        imovel: p.imovel || '', tipo: 'Repasse ao proprietário', categoria: 'ter_repasse', terceiros: true,
+        proprietario_id: p.proprietario_id || '', mes: venc.mes, ano: venc.ano,
+        dia_venc: diaNoMes(venc.ano, venc.mes, Number(c.dia_repasse) || dia), valor: repasse, status: 'pendente',
+        pago_por: 'empresa', recorrente: false, confirmar_valor: false, parcela_id: p.id, contrato_id: p.contrato_id || '', origem: 'parcela',
+      });
+    }
+    return { receitas, despesas };
+  }
+
+  // Conta de terceiros: tudo que entrou dos inquilinos menos as taxas da empresa e os repasses já pagos.
+  function contaTerceiros(receitas, despesas) {
+    const entradas = r2(receitas.filter(r => categoriaReceita(r) === 'ter_recebido').reduce((s, r) => s + Number(r.valor || 0), 0));
+    const taxas = r2(receitas.filter(r => r.retida).reduce((s, r) => s + Number(r.valor || 0), 0));
+    const rep = despesas.filter(d => categoriaDespesa(d) === 'ter_repasse');
+    const repassado = r2(rep.filter(d => d.status === 'pago').reduce((s, d) => s + Number(d.valor || 0), 0));
+    const aRepassar = r2(rep.filter(d => d.status !== 'pago').reduce((s, d) => s + Number(d.valor || 0), 0));
+    return { entradas, taxas, repassado, aRepassar, saldo: r2(entradas - taxas - repassado) };
+  }
+
+  // DRE do período (mês opcional). Fica de fora: dinheiro de terceiros e despesa paga direto pelo inquilino.
+  function dre(receitas, despesas, { ano, mes }) {
+    const noPeriodo = x => x.ano === ano && (!mes || x.mes === mes);
+    const soma = (lista, f) => {
+      const m = {};
+      for (const x of lista) { const k = f(x); m[k] = r2((m[k] || 0) + Number(x.valor || 0)); }
+      return m;
+    };
+    const rec = soma(receitas.filter(r => noPeriodo(r) && !ehTerceiros(r, false)), categoriaReceita);
+    const desp = soma(despesas.filter(d => noPeriodo(d) && despesaDaEmpresa(d)), categoriaDespesa);
+    const linhas = ids => ids.map(id => ({ ...conta(id), valor: rec[id] || desp[id] || 0 }));
+    const tot = l => r2(l.reduce((s, x) => s + x.valor, 0));
+    const receitaPorNat = {};
+    for (const p of PLANO.filter(p => p.grupo === 'receita')) receitaPorNat[p.natureza] = r2((receitaPorNat[p.natureza] || 0) + (rec[p.id] || 0));
+    const receitaBruta = linhas(PLANO.filter(p => p.grupo === 'receita').map(p => p.id));
+    const impostos = linhas(['desp_impostos']);
+    const custos = linhas(['desp_corretor']);
+    const operacionais = linhas(['desp_marketing', 'desp_fixas', 'desp_imovel', 'desp_outras']);
+    const financeiro = linhas(['desp_financeiro']);
+    const rb = tot(receitaBruta), rl = r2(rb - tot(impostos)), lb = r2(rl - tot(custos));
+    const ro = r2(lb - tot(operacionais)), res = r2(ro - tot(financeiro));
+    return {
+      receitaBruta, impostos, custos, operacionais, financeiro, receitaPorNat,
+      totais: { receitaBruta: rb, impostos: tot(impostos), receitaLiquida: rl, custos: tot(custos), lucroBruto: lb,
+        operacionais: tot(operacionais), resultadoOperacional: ro, financeiro: tot(financeiro), resultado: res,
+        margem: rb > 0 ? r2(res / rb * 100) : null },
+    };
+  }
+
+  // Fluxo de caixa mês a mês: realizado (o que entrou/saiu) e previsto (o que ainda está para entrar/sair).
+  function fluxoCaixa({ receitas, despesas, parcelas, contratos = [], ano }) {
+    const cs = Object.fromEntries(contratos.map(c => [c.id, c]));
+    const meses = [];
+    let acumulado = 0;
+    for (let mes = 1; mes <= 12; mes++) {
+      const doMes = x => x.ano === ano && x.mes === mes;
+      const entrou = r2(receitas.filter(r => doMes(r) && !ehTerceiros(r, false)).reduce((s, r) => s + Number(r.valor || 0), 0));
+      const saiu = r2(despesas.filter(d => doMes(d) && despesaDaEmpresa(d) && d.status === 'pago').reduce((s, d) => s + Number(d.valor || 0), 0));
+      // Parcela de imóvel de terceiro: para o caixa da empresa só conta a taxa.
+      const aEntrar = r2(parcelas.filter(p => doMes(p) && p.status === 'pendente').reduce((s, p) => {
+        if (!p.terceiros) return s + Number(p.valor || 0);
+        const c = cs[p.contrato_id] || {};
+        const aluguel = (p.itens || []).filter(i => i.descricao === 'Aluguel').reduce((t, i) => t + i.valor, 0);
+        return s + aluguel * (Number(c.taxa_adm_pct) || 0) / 100;
+      }, 0));
+      const aSair = r2(despesas.filter(d => doMes(d) && despesaDaEmpresa(d) && d.status !== 'pago').reduce((s, d) => s + Number(d.valor || 0), 0));
+      const saldo = r2(entrou - saiu + aEntrar - aSair);
+      acumulado = r2(acumulado + saldo);
+      meses.push({ mes, entrou, saiu, aEntrar, aSair, saldoRealizado: r2(entrou - saiu), saldo, acumulado });
+    }
+    return meses;
+  }
+
+  // Parcelas vencidas e não pagas, com dias de atraso e faixa.
+  function inadimplencia(parcelas, hoje) {
+    const h = typeof hoje === 'string' ? hoje : `${hoje.getFullYear()}-${pad(hoje.getMonth() + 1)}-${pad(hoje.getDate())}`;
+    const dias = (a, b) => Math.round((new Date(a + 'T12:00:00') - new Date(b + 'T12:00:00')) / 864e5);
+    const lista = parcelas.filter(p => p.status === 'pendente' && p.vencimento && p.vencimento < h)
+      .map(p => { const atraso = dias(h, p.vencimento); return { ...p, atraso, faixa: atraso <= 30 ? '1–30 dias' : atraso <= 60 ? '31–60 dias' : atraso <= 90 ? '61–90 dias' : 'mais de 90 dias' }; })
+      .sort((a, b) => b.atraso - a.atraso);
+    const faixas = ['1–30 dias', '31–60 dias', '61–90 dias', 'mais de 90 dias'].map(f => {
+      const l = lista.filter(p => p.faixa === f);
+      return { faixa: f, qtd: l.length, valor: r2(l.reduce((s, p) => s + Number(p.valor || 0), 0)) };
+    });
+    return { lista, faixas, total: r2(lista.reduce((s, p) => s + Number(p.valor || 0), 0)) };
+  }
+
+  // Comissões de corretores: a pagar e pagas, por corretor.
+  function comissoes(despesas, pessoas = []) {
+    const nome = id => (pessoas.find(p => p.id === id) || {}).nome || 'Sem corretor';
+    const m = {};
+    for (const d of despesas.filter(d => categoriaDespesa(d) === 'desp_corretor')) {
+      const k = d.corretor_id || '';
+      m[k] = m[k] || { corretor_id: k, nome: nome(k), aPagar: 0, pago: 0, itens: [] };
+      if (d.status === 'pago') m[k].pago = r2(m[k].pago + Number(d.valor || 0)); else m[k].aPagar = r2(m[k].aPagar + Number(d.valor || 0));
+      m[k].itens.push(d);
+    }
+    return Object.values(m).sort((a, b) => b.aPagar - a.aPagar);
+  }
+
+  // Extrato do proprietário no mês: o que entrou dos inquilinos, a taxa da imobiliária e o repasse.
+  function extratoProprietario({ proprietarioId, receitas, despesas, ano, mes }) {
+    const doMes = x => x.ano === ano && x.mes === mes;
+    const parcelasDoDono = new Set(receitas.filter(r => categoriaReceita(r) === 'ter_recebido' && r.proprietario_id === proprietarioId).map(r => r.parcela_id));
+    const recebidos = receitas.filter(r => doMes(r) && categoriaReceita(r) === 'ter_recebido' && r.proprietario_id === proprietarioId);
+    const taxas = receitas.filter(r => doMes(r) && r.retida && parcelasDoDono.has(r.parcela_id));
+    const repasses = despesas.filter(d => categoriaDespesa(d) === 'ter_repasse' && d.proprietario_id === proprietarioId && (doMes(d) || recebidos.some(r => r.parcela_id === d.parcela_id)));
+    const t = l => r2(l.reduce((s, x) => s + Number(x.valor || 0), 0));
+    return {
+      recebidos, taxas, repasses,
+      totais: { recebido: t(recebidos), taxas: t(taxas), repasse: t(repasses),
+        repassado: t(repasses.filter(d => d.status === 'pago')), aRepassar: t(repasses.filter(d => d.status !== 'pago')) },
+    };
+  }
+
+  // Parcelas ainda pendentes que já têm uma receita lançada à mão (extrato, robô de cobrança) no mesmo mês.
+  function receitaJaLancada(p, receitas) {
+    if (p.tipo !== 'locacao' || p.terceiros) return null;
+    return receitas.find(r => !r.parcela_id && !r.terceiros && r.imovel === p.imovel && r.mes === p.mes && r.ano === p.ano && categoriaReceita(r) === 'rec_aluguel') || null;
+  }
+
+  // Contratos de locação a partir dos imóveis alugados já cadastrados (para não digitar tudo de novo).
+  function contratosDosImoveis(imoveis, contratos, { mes, ano }) {
+    const comContrato = new Set(contratos.filter(c => c.tipo === 'locacao' && c.ativo !== false).map(c => c.imovel));
+    return imoveis.filter(i => i.status === 'ativo' && i.inquilino && Number(i.aluguel) > 0 && !comContrato.has(i.nome)).map(i => ({
+      tipo: 'locacao', ativo: true, imovel: i.nome, empresa: i.empresa || '', terceiros: false,
+      cliente_nome: i.inquilino, aluguel: Number(i.aluguel) || 0,
+      encargos: 0, // condomínio/IPTU continuam nas despesas do imóvel
+      dia_vencimento: Number(i.dia_vencimento) || 1, inicio: chaveMes(ano, mes), fim: '',
+      taxa_adm_pct: 0, taxa_1a_pct: 0, dia_repasse: 0,
+    }));
+  }
+
+  return { PLANO, NATUREZAS, conta, categoriaDespesa, categoriaReceita, ehTerceiros, despesaDaEmpresa, locacaoNoMes,
+    planejarParcelas, parcelasVenda, baixaParcela, contaTerceiros, dre, fluxoCaixa, inadimplencia, comissoes,
+    extratoProprietario, receitaJaLancada, contratosDosImoveis, somarMes, chaveMes };
+})();
+if (typeof module !== 'undefined') module.exports = Financeiro;
+// === FINANCEIRO (fim) ===
 
 // === CONCILIAÇÃO COM EXTRATO (início) ===
 // Lê o extrato do banco (OFX ou CSV exportado do C6) e sugere:
@@ -2561,6 +2913,606 @@ const Conciliacao = (() => {
 if (typeof module !== 'undefined') module.exports = Conciliacao;
 // === CONCILIAÇÃO COM EXTRATO (fim) ===
 
+// === TELAS DO FINANCEIRO (contratos, pessoas, a receber, terceiros, relatórios) ===
+const PAPEIS = { proprietario: 'Proprietário', inquilino: 'Inquilino', comprador: 'Comprador', corretor: 'Corretor' };
+const pessoaPorId = id => state.pessoas.find(p => p.id === id);
+const nomePessoa = id => (pessoaPorId(id) || {}).nome || '';
+const hojeISO = () => `${HOJE.getFullYear()}-${String(HOJE.getMonth() + 1).padStart(2, '0')}-${String(HOJE.getDate()).padStart(2, '0')}`;
+const dataBR = iso => iso ? iso.split('-').reverse().join('/') : '—';
+const mesBR = k => { if (!k) return '—'; const [a, m] = k.split('-'); return `${MESES[Number(m) - 1]}/${a}`; };
+const th = (t, al = 'left') => `<th class="text-${al} px-4 py-3 text-xs uppercase tracking-wider font-semibold text-amber-50">${t}</th>`;
+const tabela = (cabecalho, linhas, vazio, colunas) => `<div class="card rounded-xl overflow-hidden overflow-x-auto"><table class="w-full text-sm">
+  <thead style="background:#1a4d3a"><tr>${cabecalho}</tr></thead>
+  <tbody>${linhas.length ? linhas.map((l, i) => `<tr class="${i % 2 === 0 ? 'bg-amber-50/30' : ''}" style="border-bottom:1px solid #e8dfc9">${l}</tr>`).join('') : `<tr><td colspan="${colunas}" class="text-center p-8 text-stone-500 italic">${vazio}</td></tr>`}</tbody>
+</table></div>`;
+const td = (c, extra = '') => `<td class="px-4 py-3 ${extra}">${c}</td>`;
+const cartao = (rotulo, valor, sub = '', cor = '#1a4d3a', destaque = false) => destaque
+  ? `<div class="card rounded-xl p-5" style="background:linear-gradient(135deg,${cor},${cor}dd);color:#fdfbf6"><div class="text-xs uppercase tracking-widest opacity-80 font-semibold mb-2">${rotulo}</div><div class="titulo-serif text-3xl font-bold num-mono">${valor}</div>${sub ? `<div class="text-xs opacity-80 mt-1">${sub}</div>` : ''}</div>`
+  : `<div class="card rounded-xl p-5"><div class="text-xs uppercase tracking-widest text-stone-500 font-semibold mb-2">${rotulo}</div><div class="titulo-serif text-3xl font-bold num-mono" style="color:${cor}">${valor}</div>${sub ? `<div class="text-xs text-stone-500 mt-1">${sub}</div>` : ''}</div>`;
+const botao = (rotulo, acao, primario = false, titulo = '') => `<button onclick="${acao}" title="${titulo}" class="px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 hover-lift" style="${primario ? 'background:#1a4d3a;color:#fdfbf6' : 'background:#f5f1e8;color:#1a3a2a;border:1px solid #d4c5a0'}">${rotulo}</button>`;
+const abasInternas = (lista, atual, acao) => `<div class="inline-flex rounded-lg p-1 gap-1 flex-wrap" style="background:#ede4d3">${lista.map(x => `<button onclick="${acao}('${x.id}')" class="px-4 py-2 rounded-md text-sm font-semibold whitespace-nowrap" style="${atual === x.id ? 'background:#fdfbf6;color:#1a3a2a;box-shadow:0 1px 2px rgba(0,0,0,.08)' : 'color:#5d4037'}">${x.label}</button>`).join('')}</div>`;
+const titulo = (t, sub, botoes = '') => `<div class="flex justify-between items-center flex-wrap gap-4"><div><h2 class="titulo-serif text-3xl font-bold" style="color:#1a3a2a">${t}</h2>${sub ? `<p class="text-sm text-stone-500">${sub}</p>` : ''}</div><div class="flex gap-2 flex-wrap">${botoes}</div></div>`;
+const opcoesCategoria = (grupo, atual) => Financeiro.PLANO.filter(p => p.grupo === grupo).map(p => `<option value="${p.id}" ${atual === p.id ? 'selected' : ''}>${p.cod} · ${escapeHtml(p.nome)}</option>`).join('');
+const pillCategoria = id => { const c = Financeiro.conta(id); return c ? `<span class="pill" style="background:#f5f1e8;color:#5d4037;text-transform:none;letter-spacing:0" title="Plano de contas">${c.cod} ${escapeHtml(c.nome)}</span>` : ''; };
+const statusParcela = p => {
+  if (p.status === 'pago') return '<span class="pill badge-pago">✓ Recebido</span>';
+  if (p.status === 'cancelado') return '<span class="pill" style="background:#e7e5e4;color:#57534e">Cancelada</span>';
+  if (p.vencimento < hojeISO()) return `<span class="pill badge-vencido">Vencida</span>`;
+  return '<span class="pill badge-proximo">A receber</span>';
+};
+
+// ---------- CONTRATOS E PESSOAS ----------
+function renderContratos(d) {
+  const sub = abasInternas([{ id: 'contratos', label: `Contratos (${state.contratos.length})` }, { id: 'pessoas', label: `Pessoas (${state.pessoas.length})` }], state.subContratos, 'setSubContratos');
+  return `<div class="max-w-7xl mx-auto px-6 pt-6">${sub}</div>` + (state.subContratos === 'pessoas' ? renderPessoas() : renderListaContratos());
+}
+
+function renderListaContratos() {
+  const linhas = [...state.contratos].sort((a, b) => (a.ativo === false) - (b.ativo === false) || String(a.imovel).localeCompare(b.imovel)).map(c => {
+    const loc = c.tipo === 'locacao';
+    const dono = loc ? (c.terceiros ? '👤 ' + escapeHtml(nomePessoa(c.proprietario_id) || 'proprietário') : '🏢 ' + escapeHtml(c.empresa || 'empresa')) : '—';
+    const valor = loc ? `${formatBRL(c.aluguel)}${Number(c.encargos) ? `<div class="text-xs text-stone-500">+ ${formatBRL(c.encargos)} encargos</div>` : ''}`
+      : `${formatBRL(c.valor_venda * c.comissao_pct / 100)}<div class="text-xs text-stone-500">${c.comissao_pct}% de ${formatBRL(c.valor_venda)} · ${c.parcelas || 1}x</div>`;
+    const taxa = loc ? (c.terceiros ? `${c.taxa_adm_pct || 0}% adm${Number(c.taxa_1a_pct) ? ` · ${c.taxa_1a_pct}% 1ª` : ''}` : 'imóvel próprio') : (c.corretor_id ? `${escapeHtml(nomePessoa(c.corretor_id))} · ${c.corretor_pct || 0}%` : '—');
+    const vig = loc ? `${mesBR(c.inicio)} → ${c.fim ? mesBR(c.fim) : 'sem fim'}` : dataBR(c.primeiro_venc);
+    return td(`<span class="pill" style="background:${loc ? '#dbeafe;color:#1e3a5f' : '#fce7f3;color:#9d174d'}">${loc ? 'Locação' : 'Venda'}</span>${c.ativo === false ? ' <span class="pill" style="background:#e7e5e4;color:#57534e">encerrado</span>' : ''}`)
+      + td(`<div class="font-semibold" style="color:#1a3a2a">${escapeHtml(c.imovel)}</div>`)
+      + td(escapeHtml(c.cliente_nome || nomePessoa(c.cliente_id) || '—'), 'text-stone-600')
+      + td(dono, 'text-stone-600 text-xs')
+      + td(valor, 'text-right num-mono accent font-semibold')
+      + td(taxa, 'text-xs text-stone-600')
+      + td(vig, 'text-xs num-mono text-stone-600')
+      + td(`<div class="flex gap-2 justify-end"><button onclick="editarContrato('${c.id}')" class="p-1.5 rounded hover:bg-amber-100" title="Editar">${icons.edit}</button><button onclick="removerContrato('${c.id}')" class="p-1.5 rounded hover:bg-red-100 text-red-700" title="Remover">${icons.trash}</button></div>`);
+  });
+  const faltam = Financeiro.contratosDosImoveis(state.imoveis, state.contratos, { mes: HOJE.getMonth() + 1, ano: HOJE.getFullYear() }).length;
+  return `<main class="max-w-7xl mx-auto px-6 py-6"><div class="space-y-6">
+    ${titulo('Contratos', 'Cada contrato de aluguel gera a parcela do mês sozinho. Cada venda gera a comissão, que pode ser parcelada.',
+      (faltam ? botao(`📥 Trazer ${faltam} aluguel(éis) dos imóveis`, 'importarContratos()', false, 'Cria um contrato de locação para cada imóvel alugado que ainda não tem') : '')
+      + botao('🔄 Gerar parcelas', 'gerarParcelasUI()', false, 'Gera as parcelas de aluguel do mês atual e do próximo')
+      + botao(icons.plus + ' Venda', "abrirModalContrato('venda')")
+      + botao(icons.plus + ' Locação', "abrirModalContrato('locacao')", true))}
+    ${tabela(th('Tipo') + th('Imóvel') + th('Inquilino / comprador') + th('Dono') + th('Valor', 'right') + th('Taxa / corretor') + th('Vigência') + '<th></th>', linhas, 'Nenhum contrato ainda. Comece trazendo os aluguéis dos imóveis já cadastrados.', 8)}
+  </div></main>`;
+}
+
+function renderPessoas() {
+  const linhas = [...state.pessoas].sort((a, b) => String(a.nome).localeCompare(b.nome)).map(p => {
+    const nContratos = state.contratos.filter(c => [c.cliente_id, c.proprietario_id, c.corretor_id].includes(p.id)).length;
+    return td(`<div class="font-semibold" style="color:#1a3a2a">${escapeHtml(p.nome)}</div>${p.doc ? `<div class="text-xs text-stone-500 num-mono">${escapeHtml(p.doc)}</div>` : ''}`)
+      + td((p.papeis || []).map(x => `<span class="pill mr-1" style="background:#f5f1e8;color:#5d4037">${PAPEIS[x] || x}</span>`).join(''))
+      + td([p.whatsapp, p.email].filter(Boolean).map(escapeHtml).join('<br>') || '—', 'text-xs text-stone-600')
+      + td(escapeHtml(p.pix || '—'), 'text-xs text-stone-600')
+      + td(nContratos || '—', 'text-center num-mono')
+      + td(`<div class="flex gap-2 justify-end"><button onclick="editarPessoa('${p.id}')" class="p-1.5 rounded hover:bg-amber-100" title="Editar">${icons.edit}</button><button onclick="removerPessoa('${p.id}')" class="p-1.5 rounded hover:bg-red-100 text-red-700" title="Remover">${icons.trash}</button></div>`);
+  });
+  return `<main class="max-w-7xl mx-auto px-6 py-6"><div class="space-y-6">
+    ${titulo('Pessoas', 'Proprietários, inquilinos, compradores e corretores. Uma pessoa pode ter mais de um papel.', botao(icons.plus + ' Nova pessoa', 'abrirModalPessoa()', true))}
+    ${tabela(th('Nome') + th('Papel') + th('Contato') + th('Pix / banco') + th('Contratos', 'center') + '<th></th>', linhas, 'Ninguém cadastrado ainda. As pessoas também são criadas sozinhas quando você digita um nome novo no contrato.', 6)}
+  </div></main>`;
+}
+
+function renderModalPessoa() {
+  const p = state.modalPessoa;
+  return `<div class="fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4" onclick="if(event.target===this)fecharModaisFin()">
+    <div class="card rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto" style="background:#fdfbf6">
+      <div class="flex justify-between items-center p-6 border-b" style="border-color:#e8dfc9"><h3 class="titulo-serif text-2xl font-bold" style="color:#1a3a2a">${p.id ? 'Editar pessoa' : 'Nova pessoa'}</h3><button onclick="fecharModaisFin()">${icons.x}</button></div>
+      <div class="p-6 space-y-4">
+        ${field('Nome', `<input id="ps-nome" class="input" value="${escapeHtml(p.nome || '')}"/>`)}
+        <div><label class="block text-xs uppercase tracking-wider font-semibold mb-1.5" style="color:#5d4037">Papel</label><div class="flex gap-4 flex-wrap text-sm">
+          ${Object.entries(PAPEIS).map(([k, l]) => `<label class="flex items-center gap-1.5"><input type="checkbox" class="ps-papel" value="${k}" ${(p.papeis || []).includes(k) ? 'checked' : ''}/> ${l}</label>`).join('')}
+        </div></div>
+        <div class="grid grid-cols-2 gap-4">
+          ${field('CPF ou CNPJ', `<input id="ps-doc" class="input" inputmode="numeric" value="${escapeHtml(p.doc || '')}"/>`)}
+          ${field('WhatsApp', `<input id="ps-whats" class="input" inputmode="tel" value="${escapeHtml(p.whatsapp || '')}"/>`)}
+        </div>
+        ${field('E-mail', `<input id="ps-email" type="email" class="input" value="${escapeHtml(p.email || '')}"/>`)}
+        ${field('Pix ou dados bancários (para repasse ou comissão)', `<input id="ps-pix" class="input" value="${escapeHtml(p.pix || '')}"/>`)}
+        ${field('Comissão padrão do corretor (% da comissão da imobiliária)', `<input id="ps-pct" type="number" step="0.1" class="input" value="${p.comissao_pct || ''}"/>`)}
+        ${field('Observações', `<textarea id="ps-obs" class="input" rows="2">${escapeHtml(p.obs || '')}</textarea>`)}
+      </div>
+      <div class="flex justify-end gap-3 p-6 border-t" style="border-color:#e8dfc9"><button onclick="fecharModaisFin()" class="px-5 py-2 rounded-md text-sm font-semibold text-stone-700 hover:bg-stone-100">Cancelar</button><button onclick="confirmarSalvarPessoa()" class="px-5 py-2 rounded-md text-sm font-semibold text-amber-50" style="background:#1a4d3a">Salvar</button></div>
+    </div></div>`;
+}
+
+function renderModalContrato() {
+  const c = state.modalContrato;
+  const loc = c.tipo === 'locacao';
+  const nomes = papel => [...new Set(state.pessoas.filter(p => !papel || (p.papeis || []).includes(papel)).map(p => p.nome))].map(n => `<option value="${escapeHtml(n)}">`).join('');
+  const imoveis = state.imoveis.map(i => `<option value="${escapeHtml(i.nome)}" ${c.imovel === i.nome ? 'selected' : ''}>${escapeHtml(i.nome)}</option>`).join('');
+  const v = (k, def = '') => escapeHtml(c[k] ?? def);
+  return `<div class="fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4" onclick="if(event.target===this)fecharModaisFin()">
+    <div class="card rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" style="background:#fdfbf6">
+      <div class="flex justify-between items-center p-6 border-b" style="border-color:#e8dfc9"><h3 class="titulo-serif text-2xl font-bold" style="color:#1a3a2a">${c.id ? 'Editar' : 'Novo'} contrato de ${loc ? 'locação' : 'venda'}</h3><button onclick="fecharModaisFin()">${icons.x}</button></div>
+      <div class="p-6 space-y-4">
+        <datalist id="ct-pessoas">${nomes()}</datalist>
+        <div class="grid grid-cols-2 gap-4">
+          ${field('Imóvel', `<select id="ct-imovel" class="input"><option value="">—</option>${imoveis}${c.imovel && !state.imoveis.some(i => i.nome === c.imovel) ? `<option selected>${escapeHtml(c.imovel)}</option>` : ''}</select>`)}
+          ${field('Empresa (de quem é o caixa)', `<input id="ct-empresa" class="input" list="lista-empresas-ct" value="${v('empresa')}"/><datalist id="lista-empresas-ct">${[...new Set(state.imoveis.map(i => i.empresa).filter(Boolean))].map(e => `<option value="${escapeHtml(e)}">`).join('')}</datalist>`)}
+        </div>
+        ${field(loc ? 'Inquilino' : 'Comprador', `<input id="ct-cliente" class="input" list="ct-pessoas" value="${escapeHtml(c.cliente_nome || nomePessoa(c.cliente_id))}" placeholder="Digite o nome (se for novo, o cadastro é criado)"/>`)}
+        ${loc ? `
+          <div class="grid grid-cols-3 gap-4">
+            ${field('Aluguel (R$)', `<input id="ct-aluguel" type="number" step="0.01" class="input" value="${v('aluguel', 0)}"/>`)}
+            ${field('Encargos cobrados junto (R$)', `<input id="ct-encargos" type="number" step="0.01" class="input" value="${v('encargos', 0)}" title="Condomínio/IPTU que vêm no mesmo boleto do aluguel"/>`)}
+            ${field('Dia do vencimento', `<input id="ct-dia" type="number" min="1" max="31" class="input" value="${v('dia_vencimento', 5)}"/>`)}
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            ${field('Início', `<input id="ct-inicio" type="month" class="input" value="${v('inicio')}"/>`)}
+            ${field('Fim (vazio = sem fim)', `<input id="ct-fim" type="month" class="input" value="${v('fim')}"/>`)}
+          </div>
+          <div class="rounded-lg p-4 space-y-3" style="background:#f5f1e8;border:1px solid #e8dfc9">
+            <label class="flex items-center gap-2 text-sm font-semibold" style="color:#1a3a2a"><input id="ct-terceiros" type="checkbox" ${c.terceiros ? 'checked' : ''} onchange="document.getElementById('ct-bloco-terceiros').style.display=this.checked?'':'none'"/> Imóvel de terceiro (a imobiliária administra e repassa ao proprietário)</label>
+            <div id="ct-bloco-terceiros" class="space-y-3" style="${c.terceiros ? '' : 'display:none'}">
+              <p class="text-xs text-stone-500">O aluguel entra na conta de terceiros. A taxa fica com a empresa e o resto vira um repasse a pagar ao proprietário.</p>
+              ${field('Proprietário', `<input id="ct-proprietario" class="input" list="ct-pessoas" value="${escapeHtml(nomePessoa(c.proprietario_id))}"/>`)}
+              <div class="grid grid-cols-3 gap-3">
+                ${field('Taxa de adm. (%)', `<input id="ct-adm" type="number" step="0.1" class="input" value="${v('taxa_adm_pct', 10)}"/>`)}
+                ${field('Taxa 1ª locação (% do 1º aluguel)', `<input id="ct-1a" type="number" step="0.1" class="input" value="${v('taxa_1a_pct', 0)}"/>`)}
+                ${field('Dia do repasse', `<input id="ct-repasse" type="number" min="0" max="31" class="input" value="${v('dia_repasse', 10)}"/>`)}
+              </div>
+            </div>
+          </div>` : `
+          <div class="grid grid-cols-3 gap-4">
+            ${field('Valor da venda (R$)', `<input id="ct-venda" type="number" step="0.01" class="input" value="${v('valor_venda', 0)}"/>`)}
+            ${field('Comissão (%)', `<input id="ct-com" type="number" step="0.1" class="input" value="${v('comissao_pct', 6)}"/>`)}
+            ${field('Parcelas', `<input id="ct-parc" type="number" min="1" max="60" class="input" value="${v('parcelas', 1)}"/>`)}
+          </div>
+          ${field('1º vencimento da comissão', `<input id="ct-venc" type="date" class="input" value="${v('primeiro_venc', hojeISO())}"/>`)}
+          <div class="grid grid-cols-2 gap-4">
+            ${field('Corretor', `<input id="ct-corretor" class="input" list="ct-pessoas" value="${escapeHtml(nomePessoa(c.corretor_id))}"/>`)}
+            ${field('Parte do corretor (% da comissão)', `<input id="ct-corpct" type="number" step="0.1" class="input" value="${v('corretor_pct', '')}"/>`)}
+          </div>
+          <p class="text-xs text-stone-500">A comissão do corretor vira uma conta a pagar quando cada parcela da comissão for recebida.</p>`}
+        <label class="flex items-center gap-2 text-sm"><input id="ct-ativo" type="checkbox" ${c.ativo === false ? '' : 'checked'}/> Contrato ativo</label>
+        ${field('Observações', `<textarea id="ct-obs" class="input" rows="2">${escapeHtml(c.obs || '')}</textarea>`)}
+      </div>
+      <div class="flex justify-end gap-3 p-6 border-t" style="border-color:#e8dfc9"><button onclick="fecharModaisFin()" class="px-5 py-2 rounded-md text-sm font-semibold text-stone-700 hover:bg-stone-100">Cancelar</button><button onclick="confirmarSalvarContrato()" class="px-5 py-2 rounded-md text-sm font-semibold text-amber-50" style="background:#1a4d3a">Salvar</button></div>
+    </div></div>`;
+}
+
+// ---------- CONTAS: A RECEBER ----------
+function renderReceber(d) {
+  const h = hojeISO();
+  const k = Financeiro.chaveMes(d.anoAtual, d.mesAtual);
+  const ps = state.parcelas;
+  const doMes = ps.filter(p => Financeiro.chaveMes(p.ano, p.mes) === k && p.status !== 'cancelado');
+  const vencidas = ps.filter(p => p.status === 'pendente' && p.vencimento < h);
+  const filtro = state.filtroReceber;
+  const lista = ps.filter(p => filtro === 'todas' ? true : filtro === 'pagas' ? p.status === 'pago' : filtro === 'vencidas' ? (p.status === 'pendente' && p.vencimento < h) : p.status === 'pendente')
+    .sort((a, b) => filtro === 'pagas' ? String(b.vencimento).localeCompare(a.vencimento) : String(a.vencimento).localeCompare(b.vencimento));
+  const linhas = lista.map(p => {
+    const lancada = p.status === 'pendente' ? Financeiro.receitaJaLancada(p, state.receitas) : null;
+    const atraso = p.status === 'pendente' && p.vencimento < h ? Math.round((new Date(h) - new Date(p.vencimento)) / 864e5) : 0;
+    return td(`<div class="num-mono">${dataBR(p.vencimento)}</div>${atraso ? `<div class="text-xs font-semibold" style="color:#c62828">${atraso} dia(s) de atraso</div>` : ''}`)
+      + td(`<div class="font-semibold" style="color:#1a3a2a">${escapeHtml(p.descricao)}</div><div class="text-xs text-stone-500">${escapeHtml(p.imovel)}${p.terceiros ? ' · 👤 ' + escapeHtml(nomePessoa(p.proprietario_id) || 'terceiro') : ''}</div>`)
+      + td(escapeHtml(p.cliente_nome || nomePessoa(p.cliente_id) || '—'), 'text-stone-600')
+      + td(formatBRL(p.status === 'pago' && p.valor_pago != null ? p.valor_pago : p.valor), 'text-right num-mono accent font-semibold')
+      + td(statusParcela(p) + (lancada ? `<div class="text-xs mt-1" style="color:#854d0e">já tem receita de ${formatBRL(lancada.valor)} no mês</div>` : ''), 'text-center')
+      + td(`<div class="flex gap-2 justify-end flex-wrap">${p.status === 'pendente'
+          ? (lancada ? `<button onclick="vincularParcela('${p.id}','${lancada.id}')" class="px-3 py-1.5 text-xs font-semibold rounded-md" style="background:#fef3c7;color:#854d0e;border:1px solid #fcd34d" title="Marca a parcela como recebida usando a receita que já foi lançada, sem lançar de novo">Vincular</button>` : '')
+            + `<button onclick="abrirBaixa('${p.id}')" class="px-3 py-1.5 text-xs font-semibold rounded-md" style="background:#1a4d3a;color:#fdfbf6">${icons.check} Receber</button>`
+            + `<button onclick="cancelarParcela('${p.id}')" class="p-1.5 rounded hover:bg-red-100 text-red-700" title="Cancelar parcela">${icons.trash}</button>`
+          : p.status === 'pago' ? `<button onclick="desfazerBaixa('${p.id}')" class="px-3 py-1.5 text-xs font-semibold rounded-md hover:bg-stone-100" style="color:#8b3a3a" title="Apaga a receita e o repasse gerados e volta a parcela para pendente">Desfazer</button>`
+          : `<button onclick="reabrirParcela('${p.id}')" class="px-3 py-1.5 text-xs font-semibold rounded-md hover:bg-stone-100" style="color:#1a4d3a">Reabrir</button>`}</div>`);
+  });
+  const filtros = [{ k: 'pendentes', l: 'A receber' }, { k: 'vencidas', l: `Vencidas (${vencidas.length})` }, { k: 'pagas', l: 'Recebidas' }, { k: 'todas', l: 'Todas' }];
+  return `<main class="max-w-7xl mx-auto px-6 py-8"><div class="space-y-6">
+    ${titulo('A receber', 'Parcelas geradas pelos contratos: aluguel todo mês e comissões de venda.', botao('🔄 Gerar parcelas', 'gerarParcelasUI()') + botao('Contratos →', "setAba('contratos')"))}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      ${cartao(`A receber · ${MESES[d.mesAtual - 1]}/${d.anoAtual}`, formatBRL(doMes.filter(p => p.status === 'pendente').reduce((s, p) => s + p.valor, 0)), `${doMes.filter(p => p.status === 'pendente').length} parcela(s)`, '#1a4d3a', true)}
+      ${cartao('Recebido no mês', formatBRL(doMes.filter(p => p.status === 'pago').reduce((s, p) => s + (p.valor_pago ?? p.valor), 0)), `${doMes.filter(p => p.status === 'pago').length} de ${doMes.length} parcela(s)`)}
+      ${cartao('Em atraso (todas)', formatBRL(vencidas.reduce((s, p) => s + p.valor, 0)), `${vencidas.length} parcela(s) vencida(s)`, '#8b3a3a')}
+    </div>
+    <div class="flex gap-2 flex-wrap">${filtros.map(f => `<button onclick="setFiltroReceber('${f.k}')" class="pill" style="cursor:pointer;${filtro === f.k ? 'background:#1a4d3a;color:#fdfbf6' : 'background:#f5e6d8;color:#6b4423;border:1px solid #d4b896'}">${f.l}</button>`).join('')}</div>
+    ${tabela(th('Vencimento') + th('Parcela') + th('Inquilino / comprador') + th('Valor', 'right') + th('Situação', 'center') + '<th></th>', linhas, state.contratos.length ? 'Nenhuma parcela aqui.' : 'Cadastre os contratos (aba Contratos) para as parcelas aparecerem aqui.', 6)}
+  </div></main>`;
+}
+
+function renderModalBaixa() {
+  const m = state.modalBaixa;
+  const p = state.parcelas.find(x => x.id === m.id);
+  if (!p) return '';
+  const c = state.contratos.find(x => x.id === p.contrato_id);
+  const prev = Financeiro.baixaParcela(p, c, { data: m.data, valor: Number(m.valor) });
+  const linha = (t, v, cor) => `<div class="flex justify-between text-sm py-1"><span>${t}</span><span class="num-mono font-semibold" style="color:${cor}">${formatBRL(v)}</span></div>`;
+  return `<div class="fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4" onclick="if(event.target===this)fecharModaisFin()">
+    <div class="card rounded-xl max-w-lg w-full" style="background:#fdfbf6">
+      <div class="flex justify-between items-center p-6 border-b" style="border-color:#e8dfc9"><div><h3 class="titulo-serif text-2xl font-bold" style="color:#1a3a2a">Receber parcela</h3><p class="text-sm text-stone-500">${escapeHtml(p.descricao)} · ${escapeHtml(p.imovel)} · vence ${dataBR(p.vencimento)}</p></div><button onclick="fecharModaisFin()">${icons.x}</button></div>
+      <div class="p-6 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          ${field('Data em que entrou', `<input id="bx-data" type="date" class="input" value="${m.data}" onchange="atualizarBaixa()"/>`)}
+          ${field('Valor recebido (R$)', `<input id="bx-valor" type="number" step="0.01" class="input" value="${m.valor}" onchange="atualizarBaixa()"/>`)}
+        </div>
+        <div class="rounded-lg p-4" style="background:#f5f1e8;border:1px solid #e8dfc9">
+          <div class="text-xs uppercase tracking-wider font-semibold mb-2" style="color:#5d4037">O que vai ser lançado</div>
+          ${prev.receitas.map(r => linha(r.terceiros ? '🔒 Conta de terceiros (dinheiro do proprietário)' : '➕ Receita da empresa · ' + escapeHtml(Financeiro.conta(r.categoria).nome), r.valor, r.terceiros ? '#1e3a5f' : '#1a4d3a')).join('')}
+          ${prev.despesas.map(x => linha(`➖ ${x.categoria === 'ter_repasse' ? 'Repasse a pagar ao proprietário' : 'Comissão a pagar ao corretor'} · dia ${String(x.dia_venc).padStart(2, '0')}/${String(x.mes).padStart(2, '0')}`, x.valor, '#8b3a3a')).join('')}
+        </div>
+      </div>
+      <div class="flex justify-end gap-3 p-6 border-t" style="border-color:#e8dfc9"><button onclick="fecharModaisFin()" class="px-5 py-2 rounded-md text-sm font-semibold text-stone-700 hover:bg-stone-100">Cancelar</button><button onclick="confirmarBaixa()" ${m.salvando ? 'disabled' : ''} class="px-5 py-2 rounded-md text-sm font-semibold text-amber-50" style="background:#1a4d3a">${m.salvando ? 'Lançando...' : '✓ Confirmar recebimento'}</button></div>
+    </div></div>`;
+}
+
+// ---------- CONTAS: TERCEIROS ----------
+function renderTerceiros(d) {
+  const t = Financeiro.contaTerceiros(state.receitas, state.despesas);
+  const repasses = state.despesas.filter(x => Financeiro.categoriaDespesa(x) === 'ter_repasse').sort((a, b) => (a.status === 'pago') - (b.status === 'pago') || (b.ano - a.ano) || (b.mes - a.mes));
+  const entradas = state.receitas.filter(r => Financeiro.categoriaReceita(r) === 'ter_recebido').sort((a, b) => String(b.recebido_em).localeCompare(a.recebido_em)).slice(0, 30);
+  const linhasRep = repasses.map(x => td(`${String(x.dia_venc).padStart(2, '0')}/${String(x.mes).padStart(2, '0')}/${x.ano}`, 'num-mono')
+    + td(`<div class="font-semibold" style="color:#1a3a2a">${escapeHtml(nomePessoa(x.proprietario_id) || 'Proprietário')}</div><div class="text-xs text-stone-500">${escapeHtml(x.imovel)}</div>`)
+    + td(escapeHtml(pessoaPorId(x.proprietario_id)?.pix || '—'), 'text-xs text-stone-600')
+    + td(formatBRL(x.valor), 'text-right num-mono font-semibold" style="color:#8b3a3a')
+    + td(`<button onclick="marcarPaga('${x.id}','${x.status}')" class="pill ${x.status === 'pago' ? 'badge-pago' : 'badge-urgente'}">${x.status === 'pago' ? icons.check + ' Repassado' : 'A repassar'}</button>`, 'text-center'));
+  const linhasEnt = entradas.map(r => td(dataBR(r.recebido_em), 'num-mono') + td(escapeHtml(r.imovel), 'font-semibold') + td(escapeHtml(nomePessoa(r.proprietario_id) || '—'), 'text-stone-600') + td(formatBRL(r.valor), 'text-right num-mono font-semibold" style="color:#1e3a5f'));
+  return `<main class="max-w-7xl mx-auto px-6 py-8"><div class="space-y-6">
+    ${titulo('Conta de terceiros', 'O dinheiro do aluguel de imóvel de terceiro não é da empresa: entra aqui, a taxa sai para o caixa da empresa e o resto é repassado ao proprietário.')}
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+      ${cartao('Saldo de terceiros', formatBRL(t.saldo), 'deveria estar guardado para repassar', '#1e3a5f', true)}
+      ${cartao('A repassar', formatBRL(t.aRepassar), 'repasses pendentes', '#8b3a3a')}
+      ${cartao('Já repassado', formatBRL(t.repassado), 'desde o início')}
+      ${cartao('Taxas da empresa', formatBRL(t.taxas), 'administração e 1ª locação')}
+    </div>
+    <h3 class="titulo-serif text-2xl font-bold" style="color:#1a3a2a">Repasses aos proprietários</h3>
+    ${tabela(th('Data') + th('Proprietário') + th('Pix / banco') + th('Valor', 'right') + th('Situação', 'center'), linhasRep, 'Nenhum repasse ainda. Eles aparecem quando você recebe o aluguel de um imóvel de terceiro.', 5)}
+    <h3 class="titulo-serif text-2xl font-bold" style="color:#1a3a2a">Últimas entradas de inquilinos</h3>
+    ${tabela(th('Data') + th('Imóvel') + th('Proprietário') + th('Valor', 'right'), linhasEnt, 'Nenhuma entrada ainda.', 4)}
+  </div></main>`;
+}
+
+// ---------- RELATÓRIOS ----------
+function renderRelatorios(d) {
+  const subs = [
+    { id: 'geral', label: 'Comparativo' }, { id: 'fluxo', label: 'Fluxo de caixa' }, { id: 'dre', label: 'DRE' },
+    { id: 'proprietario', label: 'Extrato do proprietário' }, { id: 'inadimplencia', label: 'Inadimplência' }, { id: 'comissoes', label: 'Comissões' },
+  ];
+  const s = state.subRel;
+  const corpo = s === 'fluxo' ? renderFluxo(d) : s === 'dre' ? renderDRE(d) : s === 'proprietario' ? renderExtratoProprietario(d)
+    : s === 'inadimplencia' ? renderInadimplencia(d) : s === 'comissoes' ? renderComissoes(d) : renderComparativo(d) + renderGraficos(d);
+  return `<div class="max-w-7xl mx-auto px-6 pt-6">${abasInternas(subs, s, 'setSubRel')}</div>` + corpo;
+}
+
+function seletorPeriodo(comMes, mesTodos = true) {
+  const mesSel = state.relMes || (mesTodos ? 0 : HOJE.getMonth() + 1);
+  const anos = [...new Set([...state.receitas, ...state.despesas, ...state.parcelas].map(x => x.ano).filter(Boolean).concat([HOJE.getFullYear()]))].sort();
+  return `<div class="flex gap-2 items-center">
+    ${comMes ? `<select class="input" style="width:auto" onchange="setRelPeriodo('mes', this.value)">${mesTodos ? `<option value="0" ${!mesSel ? 'selected' : ''}>Ano todo</option>` : ''}${MESES.map((m, i) => `<option value="${i + 1}" ${mesSel === i + 1 ? 'selected' : ''}>${m}</option>`).join('')}</select>` : ''}
+    <select class="input" style="width:auto" onchange="setRelPeriodo('ano', this.value)">${anos.map(a => `<option ${state.relAno === a ? 'selected' : ''}>${a}</option>`).join('')}</select>
+    <button onclick="window.print()" class="px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap" style="background:#f5f1e8;color:#1a3a2a;border:1px solid #d4c5a0">${icons.download} Imprimir / PDF</button>
+  </div>`;
+}
+
+function renderFluxo(d) {
+  const ano = state.relAno;
+  const f = Financeiro.fluxoCaixa({ receitas: state.receitas, despesas: state.despesas, parcelas: state.parcelas, contratos: state.contratos, ano });
+  const cor = v => v >= 0 ? '#1a4d3a' : '#8b3a3a';
+  const vz = (v, c) => v ? `<span style="color:${c}">${formatBRL(v)}</span>` : '<span class="text-stone-300">—</span>';
+  const tot = k => f.reduce((s, m) => s + m[k], 0);
+  const linhas = f.map(m => td(`${MESES[m.mes - 1]}`, 'font-semibold') + td(vz(m.entrou, '#1a4d3a'), 'text-right num-mono') + td(vz(m.saiu, '#8b3a3a'), 'text-right num-mono')
+    + td(`<span style="color:${cor(m.saldoRealizado)}">${formatBRL(m.saldoRealizado)}</span>`, 'text-right num-mono font-semibold')
+    + td(vz(m.aEntrar, '#2e6b52'), 'text-right num-mono italic') + td(vz(m.aSair, '#a64453'), 'text-right num-mono italic')
+    + td(`<span style="color:${cor(m.acumulado)}">${formatBRL(m.acumulado)}</span>`, 'text-right num-mono font-bold'));
+  linhas.push(td('Total', 'font-bold') + td(formatBRL(tot('entrou')), 'text-right num-mono font-bold accent') + td(formatBRL(tot('saiu')), 'text-right num-mono font-bold" style="color:#8b3a3a')
+    + td(formatBRL(tot('saldoRealizado')), 'text-right num-mono font-bold') + td(formatBRL(tot('aEntrar')), 'text-right num-mono italic') + td(formatBRL(tot('aSair')), 'text-right num-mono italic') + td('', ''));
+  return `<main class="max-w-7xl mx-auto px-6 py-6"><div class="space-y-6">
+    ${titulo('Fluxo de caixa', `Caixa próprio da empresa em ${ano}: realizado (o que já entrou e saiu) e previsto (parcelas a receber e contas a pagar). Dinheiro de terceiros fica de fora.`, seletorPeriodo(false))}
+    ${tabela(th('Mês') + th('Entrou', 'right') + th('Saiu', 'right') + th('Saldo realizado', 'right') + th('A entrar (previsto)', 'right') + th('A sair (previsto)', 'right') + th('Acumulado', 'right'), linhas, '', 7)}
+    <p class="text-xs text-stone-500">Acumulado = soma do realizado e do previsto mês a mês. Para imóvel de terceiro, o previsto conta só a taxa de administração. Despesa paga direto pelo inquilino não entra.</p>
+  </div></main>`;
+}
+
+function renderDRE(d) {
+  const ano = state.relAno, mes = state.relMes || 0;
+  const r = Financeiro.dre(state.receitas, state.despesas, { ano, mes });
+  const T = r.totais, base = T.receitaBruta || 0;
+  const pct = v => base ? `${(v / base * 100).toFixed(1)}%` : '—';
+  const linha = (rot, v, { forte = false, menos = false, recuo = false } = {}) => `<tr style="border-bottom:1px solid #e8dfc9${forte ? ';background:#f5f1e8' : ''}">
+    <td class="px-4 py-2 ${forte ? 'font-bold' : ''} ${recuo ? 'pl-10 text-stone-600' : ''}" style="color:${forte ? '#1a3a2a' : ''}">${rot}</td>
+    <td class="px-4 py-2 text-right num-mono ${forte ? 'font-bold' : ''}" style="color:${v < 0 || menos ? '#8b3a3a' : '#1a4d3a'}">${v ? (menos ? '− ' : '') + formatBRL(Math.abs(v)) : '<span class="text-stone-300">—</span>'}</td>
+    <td class="px-4 py-2 text-right num-mono text-xs text-stone-500">${v ? pct(Math.abs(v)) : ''}</td></tr>`;
+  const det = (lista, menos) => lista.filter(x => x.valor).map(x => linha(`${x.cod} ${escapeHtml(x.nome)}`, x.valor, { menos, recuo: true })).join('');
+  const nat = Object.entries(r.receitaPorNat);
+  return `<main class="max-w-7xl mx-auto px-6 py-6"><div class="space-y-6">
+    ${titulo('DRE', `Demonstração do resultado · ${mes ? MESES[mes - 1] + '/' : ''}${ano}. Pelo plano de contas, sem o dinheiro de terceiros.`, seletorPeriodo(true))}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      ${cartao('Receita bruta', formatBRL(T.receitaBruta))}
+      ${cartao('Despesas', formatBRL(T.impostos + T.custos + T.operacionais + T.financeiro), '', '#8b3a3a')}
+      ${cartao('Resultado', formatBRL(T.resultado), T.margem != null ? `margem ${T.margem.toFixed(1)}%` : '', T.resultado >= 0 ? '#1a4d3a' : '#8b3a3a', true)}
+    </div>
+    <div class="card rounded-xl overflow-hidden overflow-x-auto"><table class="w-full text-sm">
+      <thead style="background:#1a4d3a"><tr>${th('Conta') + th('Valor', 'right') + th('% receita', 'right')}</tr></thead>
+      <tbody>
+        ${linha('Receita bruta', T.receitaBruta, { forte: true })}${det(r.receitaBruta)}
+        ${linha('(−) Impostos', T.impostos, { menos: true })}${det(r.impostos, true)}
+        ${linha('= Receita líquida', T.receitaLiquida, { forte: true })}
+        ${linha('(−) Comissões de corretores', T.custos, { menos: true })}
+        ${linha('= Lucro bruto', T.lucroBruto, { forte: true })}
+        ${linha('(−) Despesas operacionais', T.operacionais, { menos: true })}${det(r.operacionais, true)}
+        ${linha('= Resultado operacional', T.resultadoOperacional, { forte: true })}
+        ${linha('(−) Financeiro (financiamento, consórcio)', T.financeiro, { menos: true })}
+        ${linha('= Resultado do período', T.resultado, { forte: true })}
+      </tbody></table></div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="card rounded-xl p-6">
+        <h3 class="titulo-serif text-xl font-bold mb-3" style="color:#1a3a2a">Receita por tipo de negócio</h3>
+        ${nat.map(([k, v]) => `<div class="mb-3"><div class="flex justify-between text-sm"><span>${Financeiro.NATUREZAS[k]}</span><span class="num-mono font-semibold">${formatBRL(v)} <span class="text-xs text-stone-500">${pct(v)}</span></span></div><div class="h-2 rounded-full mt-1" style="background:#ede4d3"><div class="h-2 rounded-full" style="background:#1a4d3a;width:${base ? Math.max(0, v / base * 100) : 0}%"></div></div></div>`).join('')}
+      </div>
+      <details class="card rounded-xl p-6"><summary class="titulo-serif text-xl font-bold cursor-pointer" style="color:#1a3a2a">Plano de contas</summary>
+        <div class="mt-3 text-sm space-y-1">${Financeiro.PLANO.map(p => `<div class="flex gap-3"><span class="num-mono text-stone-500 w-8">${p.cod}</span><span>${escapeHtml(p.nome)}</span></div>`).join('')}</div>
+        <p class="text-xs text-stone-500 mt-3">Despesas antigas sem categoria são classificadas pelo tipo (ex.: Condomínio → 2.5, Carnê Leão → 2.1). Dá para trocar editando a despesa.</p>
+      </details>
+    </div>
+  </div></main>`;
+}
+
+function renderExtratoProprietario(d) {
+  const donos = state.pessoas.filter(p => (p.papeis || []).includes('proprietario') || state.contratos.some(c => c.proprietario_id === p.id));
+  const id = state.relProprietario && donos.some(p => p.id === state.relProprietario) ? state.relProprietario : (donos[0] || {}).id;
+  const ano = state.relAno, mes = state.relMes || (HOJE.getMonth() + 1);
+  const seletor = `<select class="input" style="width:auto" onchange="setRelProprietario(this.value)">${donos.map(p => `<option value="${p.id}" ${p.id === id ? 'selected' : ''}>${escapeHtml(p.nome)}</option>`).join('')}</select>`;
+  if (!id) return `<main class="max-w-7xl mx-auto px-6 py-6">${titulo('Extrato do proprietário', 'Aparece quando houver um contrato de imóvel de terceiro com proprietário cadastrado.')}</main>`;
+  const dono = pessoaPorId(id);
+  const e = Financeiro.extratoProprietario({ proprietarioId: id, receitas: state.receitas, despesas: state.despesas, ano, mes });
+  const contratos = state.contratos.filter(c => c.proprietario_id === id);
+  const linha = (data, desc, v, cor) => `<tr style="border-bottom:1px solid #e8dfc9"><td class="px-4 py-2 num-mono text-stone-600">${data}</td><td class="px-4 py-2">${desc}</td><td class="px-4 py-2 text-right num-mono font-semibold" style="color:${cor}">${formatBRL(v)}</td></tr>`;
+  const T = e.totais;
+  return `<main class="max-w-7xl mx-auto px-6 py-6"><div class="space-y-6">
+    ${titulo('Extrato do proprietário', `${escapeHtml(dono.nome)} · ${MESES[mes - 1]}/${ano}`, seletor + seletorPeriodo(true, false))}
+    <div class="card rounded-xl p-6 space-y-4">
+      <div class="flex justify-between flex-wrap gap-2"><div><div class="titulo-serif text-2xl font-bold" style="color:#1a3a2a">${escapeHtml(dono.nome)}</div><div class="text-xs text-stone-500">${escapeHtml(dono.doc || '')} ${dono.pix ? '· Pix: ' + escapeHtml(dono.pix) : ''}</div></div>
+        <div class="text-sm text-stone-600 text-right">Imóveis: ${contratos.map(c => escapeHtml(c.imovel)).join(', ') || '—'}</div></div>
+      <table class="w-full text-sm"><tbody>
+        ${e.recebidos.map(r => linha(dataBR(r.recebido_em), `Aluguel recebido · ${escapeHtml(r.imovel)}`, r.valor, '#1a4d3a')).join('')}
+        ${e.taxas.map(r => linha(dataBR(r.recebido_em), `(−) ${escapeHtml(Financeiro.conta(r.categoria).nome)} · ${escapeHtml(r.imovel)}`, -r.valor, '#8b3a3a')).join('')}
+        ${e.repasses.map(x => linha(`${String(x.dia_venc).padStart(2, '0')}/${String(x.mes).padStart(2, '0')}/${x.ano}`, `Repasse ${x.status === 'pago' ? 'feito' : 'a fazer'} · ${escapeHtml(x.imovel)}`, x.valor, x.status === 'pago' ? '#1e3a5f' : '#ca8a04')).join('')}
+        ${!e.recebidos.length && !e.repasses.length ? '<tr><td class="p-6 text-center text-stone-500 italic" colspan="3">Nada neste mês.</td></tr>' : ''}
+      </tbody></table>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t" style="border-color:#e8dfc9">
+        <div><div class="text-xs text-stone-500">Recebido</div><div class="num-mono font-bold accent">${formatBRL(T.recebido)}</div></div>
+        <div><div class="text-xs text-stone-500">Taxas</div><div class="num-mono font-bold" style="color:#8b3a3a">${formatBRL(T.taxas)}</div></div>
+        <div><div class="text-xs text-stone-500">Repassado</div><div class="num-mono font-bold" style="color:#1e3a5f">${formatBRL(T.repassado)}</div></div>
+        <div><div class="text-xs text-stone-500">A repassar</div><div class="num-mono font-bold" style="color:#ca8a04">${formatBRL(T.aRepassar)}</div></div>
+      </div>
+    </div>
+  </div></main>`;
+}
+
+function renderInadimplencia(d) {
+  const r = Financeiro.inadimplencia(state.parcelas, hojeISO());
+  const linhas = r.lista.map(p => {
+    const cl = pessoaPorId(p.cliente_id) || {};
+    return td(dataBR(p.vencimento), 'num-mono') + td(`<span class="font-semibold" style="color:#c62828">${p.atraso} dias</span><div class="text-xs text-stone-500">${p.faixa}</div>`)
+      + td(`<div class="font-semibold" style="color:#1a3a2a">${escapeHtml(p.cliente_nome || cl.nome || '—')}</div><div class="text-xs text-stone-500">${escapeHtml(cl.whatsapp || '')}</div>`)
+      + td(`${escapeHtml(p.descricao)}<div class="text-xs text-stone-500">${escapeHtml(p.imovel)}</div>`)
+      + td(formatBRL(p.valor), 'text-right num-mono font-bold" style="color:#8b3a3a')
+      + td(`<button onclick="abrirBaixa('${p.id}')" class="px-3 py-1.5 text-xs font-semibold rounded-md" style="background:#1a4d3a;color:#fdfbf6">Receber</button>`, 'text-right');
+  });
+  return `<main class="max-w-7xl mx-auto px-6 py-6"><div class="space-y-6">
+    ${titulo('Inadimplência', `${r.lista.length} parcela(s) vencida(s) sem pagamento · ${formatBRL(r.total)}`, `<button onclick="window.print()" class="px-4 py-2 rounded-lg font-semibold text-sm" style="background:#f5f1e8;color:#1a3a2a;border:1px solid #d4c5a0">${icons.download} Imprimir / PDF</button>`)}
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-5">${r.faixas.map((f, i) => cartao(f.faixa, formatBRL(f.valor), `${f.qtd} parcela(s)`, ['#ca8a04', '#ea580c', '#c62828', '#7f1d1d'][i])).join('')}</div>
+    ${tabela(th('Vencimento') + th('Atraso') + th('Quem deve') + th('Parcela') + th('Valor', 'right') + '<th></th>', linhas, '🎉 Ninguém em atraso.', 6)}
+  </div></main>`;
+}
+
+function renderComissoes(d) {
+  const lista = Financeiro.comissoes(state.despesas, state.pessoas);
+  // vendas intermediadas por corretor (comissão que a imobiliária já recebeu)
+  const porContrato = Object.fromEntries(state.contratos.map(c => [c.id, c]));
+  const vendas = {};
+  for (const r of state.receitas.filter(r => Financeiro.categoriaReceita(r) === 'rec_venda')) {
+    const k = (porContrato[r.contrato_id] || {}).corretor_id || '';
+    vendas[k] = (vendas[k] || 0) + Number(r.valor || 0);
+  }
+  const linhas = lista.map(c => td(`<div class="font-semibold" style="color:#1a3a2a">${escapeHtml(c.nome)}</div><div class="text-xs text-stone-500">${escapeHtml(pessoaPorId(c.corretor_id)?.pix || '')}</div>`)
+    + td(formatBRL(vendas[c.corretor_id] || 0), 'text-right num-mono') + td(formatBRL(c.pago), 'text-right num-mono')
+    + td(formatBRL(c.aPagar), 'text-right num-mono font-bold" style="color:#8b3a3a')
+    + td(c.itens.filter(x => x.status !== 'pago').map(x => `<div class="flex gap-2 items-center justify-end text-xs mb-1"><span>${escapeHtml(x.imovel)} · ${String(x.dia_venc).padStart(2, '0')}/${String(x.mes).padStart(2, '0')} · ${formatBRL(x.valor)}</span><button onclick="marcarPaga('${x.id}','${x.status}')" class="pill badge-urgente">Pagar</button></div>`).join('') || '<span class="text-xs text-stone-400">nada pendente</span>', 'text-right'));
+  return `<main class="max-w-7xl mx-auto px-6 py-6"><div class="space-y-6">
+    ${titulo('Comissões de corretores', 'Geradas sozinhas quando a comissão de uma venda é recebida.', `<button onclick="window.print()" class="px-4 py-2 rounded-lg font-semibold text-sm" style="background:#f5f1e8;color:#1a3a2a;border:1px solid #d4c5a0">${icons.download} Imprimir / PDF</button>`)}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      ${cartao('A pagar', formatBRL(lista.reduce((s, c) => s + c.aPagar, 0)), `${lista.filter(c => c.aPagar > 0).length} corretor(es)`, '#8b3a3a', true)}
+      ${cartao('Já pago', formatBRL(lista.reduce((s, c) => s + c.pago, 0)))}
+    </div>
+    ${tabela(th('Corretor') + th('Comissão recebida pela imobiliária', 'right') + th('Pago ao corretor', 'right') + th('A pagar', 'right') + th('Pendentes', 'right'), linhas, 'Nenhuma comissão de corretor ainda.', 5)}
+  </div></main>`;
+}
+
+// ---------- AÇÕES ----------
+async function gravar(colecao, id, dados) {
+  const fb = window.firebaseDB;
+  if (id) await fb.setDoc(fb.doc(fb.db, colecao, id), dados);
+  else return (await fb.addDoc(fb.collection(fb.db, colecao), dados)).id;
+  return id;
+}
+async function apagar(colecao, id) { const fb = window.firebaseDB; await fb.deleteDoc(fb.doc(fb.db, colecao, id)); }
+async function atualizar(colecao, id, dados) { const fb = window.firebaseDB; await fb.updateDoc(fb.doc(fb.db, colecao, id), dados); }
+
+// Acha a pessoa pelo nome (sem diferenciar maiúsculas) ou cria; garante o papel.
+async function pessoaPeloNome(nome, papel) {
+  nome = (nome || '').trim();
+  if (!nome) return '';
+  let p = state.pessoas.find(x => x.nome.trim().toLowerCase() === nome.toLowerCase());
+  if (!p) {
+    const dados = { nome, papeis: [papel] };
+    const id = await gravar('pessoas', null, dados);
+    p = { id, ...dados }; state.pessoas.push(p);
+  } else if (!(p.papeis || []).includes(papel)) {
+    p.papeis = [...(p.papeis || []), papel];
+    await atualizar('pessoas', p.id, { papeis: p.papeis });
+  }
+  return p.id;
+}
+
+// Cria as parcelas que faltam (aluguel do mês atual e do próximo). Não mexe nas que já existem.
+async function gerarParcelas(contratos = state.contratos) {
+  const hoje = { mes: HOJE.getMonth() + 1, ano: HOJE.getFullYear() };
+  let criadas = 0;
+  for (let i = 0; i <= 1; i++) {
+    for (const p of Financeiro.planejarParcelas(contratos, state.parcelas, Financeiro.somarMes(hoje, i))) {
+      const { id, ...dados } = p;
+      await gravar('parcelas', id, { ...dados, criado_por: 'app' });
+      state.parcelas.push(p); criadas++;
+    }
+  }
+  return criadas;
+}
+
+window.setSubContratos = s => { state.subContratos = s; render(); };
+window.setSubRel = s => { state.subRel = s; render(); };
+window.setFiltroReceber = s => { state.filtroReceber = s; render(); };
+window.setRelPeriodo = (k, v) => { if (k === 'mes') state.relMes = Number(v) || 0; else state.relAno = Number(v); render(); };
+window.setRelProprietario = v => { state.relProprietario = v; render(); };
+window.fecharModaisFin = () => { state.modalPessoa = null; state.modalContrato = null; state.modalBaixa = null; render(); };
+
+window.abrirModalPessoa = () => { state.modalPessoa = { papeis: [] }; render(); };
+window.editarPessoa = id => { state.modalPessoa = { ...pessoaPorId(id) }; render(); };
+window.confirmarSalvarPessoa = async () => {
+  const g = id => document.getElementById(id).value.trim();
+  const p = { nome: g('ps-nome'), papeis: [...document.querySelectorAll('.ps-papel:checked')].map(x => x.value), doc: g('ps-doc'), whatsapp: g('ps-whats'),
+    email: g('ps-email'), pix: g('ps-pix'), comissao_pct: parseFloat(g('ps-pct')) || 0, obs: g('ps-obs') };
+  if (!p.nome) { alert('Digite o nome.'); return; }
+  try { await gravar('pessoas', state.modalPessoa.id, p); state.modalPessoa = null; await carregarDados(); } catch (e) { alert('Erro: ' + e.message); }
+};
+window.removerPessoa = async id => {
+  if (state.contratos.some(c => [c.cliente_id, c.proprietario_id, c.corretor_id].includes(id))) { alert('Essa pessoa está em um contrato. Tire do contrato antes de apagar.'); return; }
+  if (!confirm('Remover esta pessoa?')) return;
+  try { await apagar('pessoas', id); await carregarDados(); } catch (e) { alert('Erro: ' + e.message); }
+};
+
+window.abrirModalContrato = tipo => {
+  const k = Financeiro.chaveMes(HOJE.getFullYear(), HOJE.getMonth() + 1);
+  state.modalContrato = tipo === 'venda' ? { tipo, parcelas: 1, comissao_pct: 6, primeiro_venc: hojeISO() } : { tipo, inicio: k, dia_vencimento: 5, taxa_adm_pct: 10 };
+  render();
+};
+window.editarContrato = id => { state.modalContrato = { ...state.contratos.find(c => c.id === id) }; render(); };
+window.confirmarSalvarContrato = async () => {
+  const m = state.modalContrato;
+  const g = id => (document.getElementById(id) || {}).value?.trim() ?? '';
+  const n = id => parseFloat(g(id)) || 0;
+  const loc = m.tipo === 'locacao';
+  const imovel = g('ct-imovel');
+  if (!imovel) { alert('Escolha o imóvel.'); return; }
+  const im = state.imoveis.find(i => i.nome === imovel) || {};
+  try {
+    const c = { tipo: m.tipo, imovel, empresa: g('ct-empresa') || im.empresa || '', ativo: document.getElementById('ct-ativo').checked, obs: g('ct-obs') };
+    c.cliente_nome = g('ct-cliente');
+    c.cliente_id = await pessoaPeloNome(c.cliente_nome, loc ? 'inquilino' : 'comprador');
+    if (loc) {
+      Object.assign(c, { aluguel: n('ct-aluguel'), encargos: n('ct-encargos'), dia_vencimento: parseInt(g('ct-dia')) || 1, inicio: g('ct-inicio'), fim: g('ct-fim'),
+        terceiros: document.getElementById('ct-terceiros').checked, taxa_adm_pct: n('ct-adm'), taxa_1a_pct: n('ct-1a'), dia_repasse: parseInt(g('ct-repasse')) || 0 });
+      if (!c.inicio) { alert('Preencha o mês de início.'); return; }
+      c.proprietario_id = c.terceiros ? await pessoaPeloNome(g('ct-proprietario'), 'proprietario') : '';
+      if (c.terceiros && !c.proprietario_id) { alert('Digite o nome do proprietário.'); return; }
+    } else {
+      Object.assign(c, { valor_venda: n('ct-venda'), comissao_pct: n('ct-com'), parcelas: parseInt(g('ct-parc')) || 1, primeiro_venc: g('ct-venc'), corretor_pct: n('ct-corpct') });
+      c.corretor_id = await pessoaPeloNome(g('ct-corretor'), 'corretor');
+      if (c.corretor_id && !c.corretor_pct) c.corretor_pct = Number(pessoaPorId(c.corretor_id)?.comissao_pct) || 0;
+    }
+    const id = await gravar('contratos', m.id, c);
+    c.id = id;
+    // Parcelas pendentes deste contrato são refeitas com os dados novos; as já recebidas ficam como estão.
+    const minhas = state.parcelas.filter(p => p.contrato_id === id);
+    const kHoje = Financeiro.chaveMes(HOJE.getFullYear(), HOJE.getMonth() + 1);
+    if (loc) {
+      for (const p of minhas.filter(p => p.status === 'pendente' && Financeiro.chaveMes(p.ano, p.mes) >= kHoje)) {
+        await apagar('parcelas', p.id); state.parcelas = state.parcelas.filter(x => x.id !== p.id);
+      }
+      if (c.ativo) await gerarParcelas([c]);
+    } else {
+      const novas = c.ativo ? Financeiro.parcelasVenda(c) : [];
+      for (const p of minhas.filter(p => p.status === 'pendente' && !novas.some(x => x.id === p.id))) await apagar('parcelas', p.id);
+      for (const p of novas) {
+        const atual = minhas.find(x => x.id === p.id);
+        if (atual && atual.status !== 'pendente') continue;
+        const { id: pid, ...dados } = p; await gravar('parcelas', pid, dados);
+      }
+    }
+    state.modalContrato = null;
+    await carregarDados();
+  } catch (e) { alert('Erro ao salvar: ' + e.message); console.error(e); }
+};
+window.removerContrato = async id => {
+  const pend = state.parcelas.filter(p => p.contrato_id === id && p.status === 'pendente');
+  if (!confirm(`Remover este contrato?${pend.length ? `\n\nAs ${pend.length} parcela(s) ainda não recebidas também saem. O que já foi recebido continua nas receitas.` : ''}`)) return;
+  try { for (const p of pend) await apagar('parcelas', p.id); await apagar('contratos', id); await carregarDados(); } catch (e) { alert('Erro: ' + e.message); }
+};
+window.importarContratos = async () => {
+  const hoje = { mes: HOJE.getMonth() + 1, ano: HOJE.getFullYear() };
+  const novos = Financeiro.contratosDosImoveis(state.imoveis, state.contratos, hoje);
+  if (!novos.length) return;
+  if (!confirm(`Criar ${novos.length} contrato(s) de locação a partir dos imóveis alugados?\n\n${novos.map(c => `• ${c.imovel} · ${c.cliente_nome} · ${formatBRL(c.aluguel)}`).join('\n')}\n\nEles entram como imóvel próprio, começando em ${MESES[hoje.mes - 1]}/${hoje.ano}. Se algum for de terceiro, edite depois e marque "Imóvel de terceiro".`)) return;
+  try {
+    const criados = [];
+    for (const c of novos) {
+      const im = state.imoveis.find(i => i.nome === c.imovel) || {};
+      c.cliente_id = await pessoaPeloNome(c.cliente_nome, 'inquilino');
+      const p = pessoaPorId(c.cliente_id);
+      // traz o contato do inquilino que já estava no imóvel
+      const extra = {};
+      if (im.inquilino_doc && !p.doc) extra.doc = im.inquilino_doc;
+      if (im.inquilino_whatsapp && !p.whatsapp) extra.whatsapp = im.inquilino_whatsapp;
+      if (im.inquilino_email && !p.email) extra.email = im.inquilino_email;
+      if (Object.keys(extra).length) await atualizar('pessoas', c.cliente_id, extra);
+      c.id = await gravar('contratos', null, c);
+      criados.push(c);
+    }
+    const n = await gerarParcelas(criados);
+    await carregarDados();
+    alert(`✅ ${criados.length} contrato(s) criado(s) e ${n} parcela(s) de aluguel geradas.\n\nSe o aluguel do mês já tinha sido lançado (extrato ou cobrança), use "Vincular" em Contas › A receber para não contar duas vezes.`);
+  } catch (e) { alert('Erro: ' + e.message); }
+};
+window.gerarParcelasUI = async () => {
+  try {
+    const n = await gerarParcelas();
+    await carregarDados();
+    alert(n ? `✅ ${n} parcela(s) criada(s).` : 'Tudo em dia: as parcelas deste mês e do próximo já existem.');
+  } catch (e) { alert('Erro: ' + e.message); }
+};
+
+window.abrirBaixa = id => { const p = state.parcelas.find(x => x.id === id); state.modalBaixa = { id, data: hojeISO(), valor: p.valor }; render(); };
+window.atualizarBaixa = () => { state.modalBaixa.data = document.getElementById('bx-data').value; state.modalBaixa.valor = parseFloat(document.getElementById('bx-valor').value) || 0; render(); };
+async function baixarParcela(id, { data, valor, extrato_id }) {
+  const p = state.parcelas.find(x => x.id === id);
+  const c = state.contratos.find(x => x.id === p.contrato_id);
+  const b = Financeiro.baixaParcela(p, c, { data, valor });
+  for (const r of b.receitas) await gravar('receitas', null, extrato_id && r.categoria !== 'rec_adm' && r.categoria !== 'rec_1locacao' ? { ...r, extrato_id } : r);
+  for (const d of b.despesas) await gravar('despesas', null, d);
+  await atualizar('parcelas', id, { status: 'pago', pago_em: data, valor_pago: Number(valor) });
+}
+window.confirmarBaixa = async () => {
+  const m = state.modalBaixa;
+  if (!m.data || !(m.valor > 0)) { alert('Preencha a data e o valor.'); return; }
+  m.salvando = true; render();
+  try { await baixarParcela(m.id, m); state.modalBaixa = null; await carregarDados(); }
+  catch (e) { m.salvando = false; render(); alert('Erro: ' + e.message); }
+};
+window.vincularParcela = async (pid, rid) => {
+  const r = state.receitas.find(x => x.id === rid);
+  if (!confirm(`Marcar a parcela como recebida usando a receita de ${formatBRL(r.valor)} que já foi lançada?`)) return;
+  try {
+    await atualizar('receitas', rid, { parcela_id: pid, categoria: 'rec_aluguel' });
+    await atualizar('parcelas', pid, { status: 'pago', pago_em: r.recebido_em || hojeISO(), valor_pago: Number(r.valor), receita_id: rid });
+    await carregarDados();
+  } catch (e) { alert('Erro: ' + e.message); }
+};
+window.desfazerBaixa = async id => {
+  const recs = state.receitas.filter(r => r.parcela_id === id);
+  const desps = state.despesas.filter(d => d.parcela_id === id);
+  const pagas = desps.filter(d => d.status === 'pago');
+  if (pagas.length && !confirm(`Atenção: ${pagas.length} repasse/comissão desta parcela já foi marcado como pago. Desfazer apaga mesmo assim.`)) return;
+  if (!confirm('Desfazer o recebimento? A parcela volta para pendente e as receitas, repasses e comissões gerados por ela são apagados.')) return;
+  try {
+    // receita que só foi vinculada (lançada antes à mão) não é apagada, só desvinculada
+    for (const r of recs) { if (r.origem === 'parcela') await apagar('receitas', r.id); else await atualizar('receitas', r.id, { parcela_id: '' }); }
+    for (const d of desps) await apagar('despesas', d.id);
+    await atualizar('parcelas', id, { status: 'pendente', pago_em: '', valor_pago: null, receita_id: '' });
+    await carregarDados();
+  } catch (e) { alert('Erro: ' + e.message); }
+};
+window.cancelarParcela = async id => { if (!confirm('Cancelar esta parcela? (ex.: aluguel que não vai ser cobrado)')) return; try { await atualizar('parcelas', id, { status: 'cancelado' }); await carregarDados(); } catch (e) { alert('Erro: ' + e.message); } };
+window.reabrirParcela = async id => { try { await atualizar('parcelas', id, { status: 'pendente' }); await carregarDados(); } catch (e) { alert('Erro: ' + e.message); } };
+// === FIM DAS TELAS DO FINANCEIRO ===
+
+
 // === TELA DE CONFERIR EXTRATO ===
 function renderModalExtrato() {
   const m = state.modalExtrato;
@@ -2610,6 +3562,22 @@ function renderModalExtrato() {
   </div>`;
 }
 
+// Entradas do extrato também podem ser parcelas a receber dos contratos (aluguel, comissão de venda).
+// Valor igual e vencimento perto (até 20 dias) vira sugestão; parcela tem prioridade sobre "aluguel do imóvel".
+function sugerirParcelas(linhas) {
+  const pend = state.parcelas.filter(p => p.status === 'pendente');
+  const usadas = new Set();
+  const dias = (a, b) => Math.abs(Math.round((new Date(a + 'T12:00:00') - new Date(b + 'T12:00:00')) / 864e5));
+  for (const l of linhas) {
+    if (l.jaConciliado || !(l.valor > 0)) continue;
+    const cands = pend.map(p => ({ p, dist: dias(l.data, p.vencimento), exato: Math.abs(p.valor - l.valor) <= 0.01 }))
+      .filter(c => c.dist <= 60).sort((a, b) => (b.exato - a.exato) || (a.dist - b.dist));
+    l.opcoes = [...cands.map(c => ({ chave: 'parc:' + c.p.id, rotulo: `📄 ${c.p.descricao} · ${c.p.imovel}${c.p.cliente_nome ? ' (' + c.p.cliente_nome + ')' : ''} · vence ${dataBR(c.p.vencimento)} · ${formatBRL(c.p.valor)}${c.exato ? '' : ' (valor diferente)'}` })), ...l.opcoes];
+    const exatos = cands.filter(c => c.exato && c.dist <= 20 && !usadas.has(c.p.id));
+    if (exatos.length === 1 || (exatos.length > 1 && exatos[0].dist < exatos[1].dist)) { l.sugestao = 'parc:' + exatos[0].p.id; usadas.add(exatos[0].p.id); }
+  }
+}
+
 window.abrirModalExtrato = () => { state.modalExtrato = { linhas: [] }; render(); };
 window.fecharModalExtrato = () => { state.modalExtrato = null; render(); };
 window.onExtratoSelecionado = async (event) => {
@@ -2622,6 +3590,7 @@ window.onExtratoSelecionado = async (event) => {
     const trans = Conciliacao.ler(txt, f.name);
     if (!trans.length) throw new Error('Não encontrei movimentações nesse arquivo.');
     const linhas = Conciliacao.sugerir(trans, { imoveis: state.imoveis, receitas: state.receitas, despesas: state.despesas });
+    sugerirParcelas(linhas);
     linhas.forEach(l => { l.escolha = l.sugestao; });
     state.modalExtrato = { arquivo: f.name, linhas };
   } catch (e) {
@@ -2632,8 +3601,8 @@ window.onExtratoSelecionado = async (event) => {
 window.escolherExtrato = (i, v) => {
   const m = state.modalExtrato;
   // a mesma despesa não pode ser usada por duas movimentações
-  if (v.startsWith('desp:') && m.linhas.some((l, j) => j !== i && l.escolha === v)) {
-    alert('Essa despesa já foi escolhida para outra movimentação deste extrato.');
+  if ((v.startsWith('desp:') || v.startsWith('parc:')) && m.linhas.some((l, j) => j !== i && l.escolha === v)) {
+    alert('Esse item já foi escolhido para outra movimentação deste extrato.');
   } else m.linhas[i].escolha = v;
   render();
 };
@@ -2649,6 +3618,9 @@ window.confirmarExtrato = async () => {
       if (l.escolha.startsWith('rec:')) {
         const imovel = l.escolha.slice(4);
         await fb.addDoc(fb.collection(fb.db, 'receitas'), { imovel, mes, ano, valor: l.valor, extrato_id: l.id, recebido_em: l.data, origem: 'extrato' });
+        rec++;
+      } else if (l.escolha.startsWith('parc:')) {
+        await baixarParcela(l.escolha.slice(5), { data: l.data, valor: l.valor, extrato_id: l.id });
         rec++;
       } else if (l.escolha.startsWith('desp:')) {
         const id = l.escolha.slice(5);
