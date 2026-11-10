@@ -657,7 +657,7 @@ function render() {
   }
 
   if (state.erro) {
-    root.innerHTML = `<div class="min-h-screen flex items-center justify-center p-6"><div class="card rounded-xl p-8 max-w-md"><div class="text-red-700 mb-4">${icons.alert}</div><h2 class="titulo-serif text-2xl font-bold mb-2" style="color:#1a3a2a">Erro de conexão</h2><p class="text-sm text-stone-600 mb-4">${escapeHtml(state.erro)}</p><button onclick="carregarDados()" class="accent-bg text-amber-50 px-4 py-2 rounded-md text-sm font-semibold">Tentar novamente</button></div></div>`;
+    root.innerHTML = `<div class="min-h-screen flex items-center justify-center p-6"><div class="card rounded-xl p-8 max-w-md"><div class="text-red-700 mb-4">${icons.alert}</div><h2 class="titulo-serif text-2xl font-bold mb-2" style="color:#1a3a2a">Erro de conexão</h2><p class="text-sm text-stone-600 mb-4">${escapeHtml(traduzErroDados(state.erro))}</p>${window.usuario ? `<p class="text-xs text-stone-500 mb-4">Entrou como ${escapeHtml(window.usuario.email || '')}</p>` : ''}<div class="flex gap-2"><button onclick="carregarDados()" class="accent-bg text-amber-50 px-4 py-2 rounded-md text-sm font-semibold">Tentar novamente</button><button onclick="sair()" class="px-4 py-2 rounded-md text-sm border border-stone-300 text-stone-700">Sair e entrar de novo</button></div></div></div>`;
     return;
   }
 
@@ -3662,22 +3662,37 @@ function renderLogin(msg) {
       <button type="button" onclick="esqueciSenha()" class="w-full text-xs text-stone-500 hover:underline">Esqueci a senha</button>
     </form></div>`;
 }
+function traduzErroDados(msg) {
+  const m = String(msg || '');
+  if (/permission|insufficient/i.test(m)) return 'Seu login não tem permissão para ver os dados. Clique em "Sair e entrar de novo". Se continuar, avise quem administra o app.';
+  if (/offline|network|unavailable|Failed to fetch/i.test(m)) return 'Sem conexão com a internet (ou o Firebase não respondeu). Confira a internet e tente de novo.';
+  return m;
+}
+function traduzErroLogin(e) {
+  const c = e.code || '';
+  if (c.includes('invalid-email')) return 'Esse e-mail não parece válido. Confira se digitou certo.';
+  if (c.includes('user-disabled')) return 'Esse usuário está desativado no Firebase. Peça para reativar.';
+  if (c.includes('invalid') || c.includes('wrong-password') || c.includes('user-not-found')) return 'E-mail ou senha incorretos. Se acabou de trocar a senha, use a senha nova (a do link do e-mail). Se não lembrar, clique em "Esqueci a senha".';
+  if (c.includes('operation-not-allowed')) return 'O login por e-mail ainda não foi ligado no Firebase.';
+  if (c.includes('too-many-requests')) return 'Muitas tentativas erradas. O Firebase bloqueou por alguns minutos. Espere uns 15 minutos ou troque a senha em "Esqueci a senha".';
+  if (c.includes('network-request-failed')) return 'Sem conexão com a internet. Confira a internet e tente de novo.';
+  return 'Não consegui entrar: ' + (e.message || c);
+}
 window.entrar = async () => {
   const fa = window.firebaseAuth;
   try {
     await fa.signInWithEmailAndPassword(fa.auth, document.getElementById('lg-email').value.trim(), document.getElementById('lg-senha').value);
   } catch (e) {
-    const c = e.code || '';
-    renderLogin(c.includes('invalid') || c.includes('wrong-password') || c.includes('user-not-found') ? 'E-mail ou senha incorretos.'
-      : c.includes('operation-not-allowed') ? 'O login por e-mail ainda não foi ligado no Firebase.'
-      : c.includes('too-many-requests') ? 'Muitas tentativas. Espere alguns minutos.' : 'Não consegui entrar: ' + e.message);
+    const email = document.getElementById('lg-email').value;
+    renderLogin(traduzErroLogin(e));
+    document.getElementById('lg-email').value = email;
   }
 };
 window.esqueciSenha = async () => {
   const email = (document.getElementById('lg-email').value || '').trim();
   if (!email) { alert('Digite seu e-mail primeiro.'); return; }
-  try { await window.firebaseAuth.sendPasswordResetEmail(window.firebaseAuth.auth, email); alert('Se esse e-mail tiver acesso, chega um link para criar uma nova senha.'); }
-  catch (e) { alert('Erro: ' + e.message); }
+  try { await window.firebaseAuth.sendPasswordResetEmail(window.firebaseAuth.auth, email); alert('Pronto! Se esse e-mail tiver acesso, chega em alguns minutos um link para criar uma nova senha (olhe também o spam). Abra o link, crie a senha nova (mínimo 6 caracteres) e volte aqui para entrar com ela.'); }
+  catch (e) { alert(traduzErroLogin(e)); }
 };
 window.sair = async () => { await window.firebaseAuth.signOut(window.firebaseAuth.auth); };
 function init() {
