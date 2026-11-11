@@ -82,3 +82,7 @@ test("emitir não duplica, cancelar e emitir de novo usa outra referência", asy
 test("simulação não exige segredos", async () => {
   assert.deepStrictEqual(await criar("Explorer", { dry: true }).emitir({}), { id: "simulado" });
 });
+test("cancelamento recusado com 422 fica para depois", async () => {
+  const api = { ambiente: "sandbox", pixChave: "", async chamar() { return { status: 422, json: { detail: "Título com pendência(s)" } }; } };
+  assert.deepStrictEqual(await criar("Explorer", { api, env: {} }).cancelar({ bancoId: "X" }), { cancelado: false, motivo: "Título com pendência(s)" });
+});

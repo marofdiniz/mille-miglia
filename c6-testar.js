@@ -44,9 +44,9 @@ async function testar(empresa) {
       console.log(`    Pix copia e cola: ${e.pixCopiaECola ? "ok" : "não veio"}`);
       const st = await banco.consultar({ ...cob, bancoId: e.id });
       console.log(`  ✓ Consulta: ${st.status}`);
-      await banco.cancelar({ ...cob, bancoId: e.id });
-      const st2 = await banco.consultar({ ...cob, bancoId: e.id });
-      console.log(`  ✓ Cancelamento: ${st2.status}`);
+      const cx = await banco.cancelar({ ...cob, bancoId: e.id });
+      if (cx.cancelado) console.log(`  ✓ Cancelamento: ${(await banco.consultar({ ...cob, bancoId: e.id })).status}`);
+      else console.log(`  – Cancelamento recusado por enquanto (${cx.motivo}). É normal logo depois de emitir; o robô tenta de novo na rodada seguinte.`);
     } catch (e) { console.log(`  ✗ Boleto de teste: ${e.message}`); return false; }
   }
   return true;

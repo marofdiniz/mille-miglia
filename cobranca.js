@@ -166,14 +166,19 @@ async function main() {
   // 2 e 3. planejar cancelamentos e novas
   const plano = planejar({ imoveis, cobrancas, receitas, hoje, diasAntes: parseInt(process.env.DIAS_ANTES || "10") || 10, empresas });
   for (const p of plano.pulados) console.log(`  – pulei ${p.imovel}: ${p.motivo}`);
+  const adiadas = new Set(); // cancelamento que o banco ainda não aceitou: não gerar outro no lugar
   for (const c of plano.cancelar) {
     console.log(`  ✗ cancelar ${c.descricao}: ${c.motivo}`);
     if (!dry) {
-      if (c.bancoId) await bancoDe(c.empresa, c.banco).cancelar(c, c.motivo);
+      if (c.bancoId) {
+        const r = await bancoDe(c.empresa, c.banco).cancelar(c, c.motivo);
+        if (r && r.cancelado === false) { console.log(`    (o banco ainda não deixou cancelar: ${r.motivo}; tento na próxima rodada)`); adiadas.add(c.id); continue; }
+      }
       await db.collection("cobrancas").doc(c.id).update({ status: "cancelado", motivo: c.motivo });
     }
   }
   for (const n of plano.criar) {
+    if (adiadas.has(n.id)) { console.log(`  … ${n.descricao}: espero o boleto antigo ser cancelado para gerar o novo`); continue; }
     console.log(`  + gerar ${n.descricao} · vence ${n.vencimento} · R$ ${n.valor.toFixed(2)} · ${n.empresa}/${n.banco}`);
     if (dry) continue;
     const r = await bancoDe(n.empresa, n.banco).emitir(n);

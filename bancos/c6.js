@@ -202,7 +202,11 @@ function criar(empresa, { dry, multa, juros, env = process.env, api: apiPronta }
     async cancelar(cob) {
       if (dry) return;
       const r = await api().chamar("PUT", `/v2/bank_slips/${cob.bancoId}/cancel`);
-      if (r.status !== 204 && r.status !== 200) throw erroC6(`o cancelamento do boleto ${cob.descricao}`, r);
+      if (r.status === 204 || r.status === 200) return { cancelado: true };
+      // Logo depois de emitir o título ainda está sendo registrado e o C6 responde 422
+      // ("Título com pendência(s)..."). Fica para a próxima rodada.
+      if (r.status === 422) return { cancelado: false, motivo: r.json?.detail || "título com pendência no C6" };
+      throw erroC6(`o cancelamento do boleto ${cob.descricao}`, r);
     },
   };
 }
