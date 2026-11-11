@@ -11,14 +11,36 @@ on:
         description: "Emitir, consultar e cancelar um boleto de R$ 10 (só no sandbox)"
         type: boolean
         default: false
+      homologacao:
+        description: "Rodar os testes do roteiro de homologação do C6 (bolepix, só no sandbox)"
+        type: boolean
+        default: false
 jobs:
   testar:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - run: node c6-testar.js
+        if: ${{ !inputs.homologacao }}
+        env:
+          EMPRESAS: "Explorer,Mille Miglia"
+          C6_AMBIENTE: ${{ inputs.ambiente }}
+          BOLETO_TESTE: ${{ inputs.boleto_teste && '1' || '0' }}
+          C6_EXPLORER_CLIENT_ID: ${{ secrets.C6_EXPLORER_CLIENT_ID }}
+          C6_EXPLORER_CLIENT_SECRET: ${{ secrets.C6_EXPLORER_CLIENT_SECRET }}
+          C6_EXPLORER_CERT: ${{ secrets.C6_EXPLORER_CERT }}
+          C6_EXPLORER_KEY: ${{ secrets.C6_EXPLORER_KEY }}
+          C6_EXPLORER_PIX_CHAVE: ${{ secrets.C6_EXPLORER_PIX_CHAVE }}
+          C6_MILLE_MIGLIA_CLIENT_ID: ${{ secrets.C6_MILLE_MIGLIA_CLIENT_ID }}
+          C6_MILLE_MIGLIA_CLIENT_SECRET: ${{ secrets.C6_MILLE_MIGLIA_CLIENT_SECRET }}
+          C6_MILLE_MIGLIA_CERT: ${{ secrets.C6_MILLE_MIGLIA_CERT }}
+          C6_MILLE_MIGLIA_KEY: ${{ secrets.C6_MILLE_MIGLIA_KEY }}
+          C6_MILLE_MIGLIA_PIX_CHAVE: ${{ secrets.C6_MILLE_MIGLIA_PIX_CHAVE }}
+      - run: node c6-homologacao.js
+        if: ${{ inputs.homologacao }}
         env:
           EMPRESAS: "Explorer,Mille Miglia"
           C6_AMBIENTE: ${{ inputs.ambiente }}
