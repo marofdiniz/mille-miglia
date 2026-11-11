@@ -52,13 +52,13 @@ function cliente(empresa, env = process.env) {
 
   const request = (method, path, { headers = {}, body = null } = {}) => new Promise((resolve, reject) => {
     const req = https.request({ host, path, method, agent, headers, timeout: 20000 }, res => {
-      let data = "";
-      res.setEncoding("utf8");
-      res.on("data", c => (data += c));
+      const partes = [];
+      res.on("data", c => partes.push(c));
       res.on("end", () => {
+        const bytes = Buffer.concat(partes), data = bytes.toString("utf8");
         let json = null;
         try { json = JSON.parse(data); } catch {}
-        resolve({ status: res.statusCode, json, text: data });
+        resolve({ status: res.statusCode, json, text: data, bytes, headers: res.headers });
       });
     });
     req.on("timeout", () => req.destroy(new Error("Tempo esgotado falando com o C6.")));
@@ -79,7 +79,7 @@ function cliente(empresa, env = process.env) {
       e.detalhe = r.json || String(r.text || "").slice(0, 500);
       throw e;
     }
-    tok = { access_token: r.json.access_token, scope: r.json.scope || "", expira: Date.now() + (Number(r.json.expires_in || 300) - 30) * 1000 };
+    tok = { access_token: r.json.access_token, scope: r.json.scope || "", expires_in: r.json.expires_in, expira: Date.now() + (Number(r.json.expires_in || 300) - 30) * 1000 };
     return tok;
   }
   async function chamar(method, path, corpo) {
