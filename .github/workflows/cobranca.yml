@@ -22,6 +22,11 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           EMPRESAS: "Explorer=c6,Mille Miglia=c6"
+          C6_AMBIENTE: sandbox   # trocar para producao depois da homologação no C6
+          C6_CLIENT_ID: ${{ secrets.C6_CLIENT_ID }}
+          C6_CLIENT_SECRET: ${{ secrets.C6_CLIENT_SECRET }}
+          C6_CERT: ${{ secrets.C6_CERT }}
+          C6_KEY: ${{ secrets.C6_KEY }}
           C6_EXPLORER_CLIENT_ID: ${{ secrets.C6_EXPLORER_CLIENT_ID }}
           C6_EXPLORER_CLIENT_SECRET: ${{ secrets.C6_EXPLORER_CLIENT_SECRET }}
           C6_EXPLORER_CERT: ${{ secrets.C6_EXPLORER_CERT }}

@@ -1,0 +1,32 @@
+name: Testar conexão com o C6
+on:
+  workflow_dispatch:
+    inputs:
+      ambiente:
+        description: "Ambiente do C6"
+        type: choice
+        options: [sandbox, producao]
+        default: sandbox
+jobs:
+  testar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: node c6-testar.js
+        env:
+          EMPRESAS: "Explorer,Mille Miglia"
+          C6_AMBIENTE: ${{ inputs.ambiente }}
+          C6_CLIENT_ID: ${{ secrets.C6_CLIENT_ID }}
+          C6_CLIENT_SECRET: ${{ secrets.C6_CLIENT_SECRET }}
+          C6_CERT: ${{ secrets.C6_CERT }}
+          C6_KEY: ${{ secrets.C6_KEY }}
+          C6_EXPLORER_CLIENT_ID: ${{ secrets.C6_EXPLORER_CLIENT_ID }}
+          C6_EXPLORER_CLIENT_SECRET: ${{ secrets.C6_EXPLORER_CLIENT_SECRET }}
+          C6_EXPLORER_CERT: ${{ secrets.C6_EXPLORER_CERT }}
+          C6_EXPLORER_KEY: ${{ secrets.C6_EXPLORER_KEY }}
+          C6_MILLE_MIGLIA_CLIENT_ID: ${{ secrets.C6_MILLE_MIGLIA_CLIENT_ID }}
+          C6_MILLE_MIGLIA_CLIENT_SECRET: ${{ secrets.C6_MILLE_MIGLIA_CLIENT_SECRET }}
+          C6_MILLE_MIGLIA_CERT: ${{ secrets.C6_MILLE_MIGLIA_CERT }}
+          C6_MILLE_MIGLIA_KEY: ${{ secrets.C6_MILLE_MIGLIA_KEY }}
