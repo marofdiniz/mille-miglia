@@ -201,7 +201,7 @@ async function salvarImovel(im) {
       cobranca_auto: !!im.cobranca_auto,
       inquilino_doc: im.inquilino_doc || "", inquilino_whatsapp: im.inquilino_whatsapp || "",
       inquilino_email: im.inquilino_email || "",
-      cep: im.cep || "", cidade: im.cidade || "", uf: (im.uf || "").toUpperCase(),
+      cep: im.cep || "", bairro: im.bairro || "", cidade: im.cidade || "", uf: (im.uf || "").toUpperCase(),
     };
     if (im.id) await fb.updateDoc(fb.doc(fb.db, "imoveis", im.id), dados);
     else await fb.addDoc(fb.collection(fb.db, "imoveis"), dados);
@@ -1971,6 +1971,7 @@ function renderModalImovel() {
             ${field('Cidade', `<input id="im-cidade" class="input" value="${escapeHtml(im.cidade || '')}"/>`)}
             ${field('UF', `<input id="im-uf" class="input" maxlength="2" value="${escapeHtml(im.uf || '')}"/>`)}
           </div>
+          ${field('Bairro do imóvel', `<input id="im-bairro" class="input" value="${escapeHtml(im.bairro || '')}"/>`)}
         </div>
         ${field('Observações', `<textarea id="im-obs" class="input" rows="2">${escapeHtml(im.obs || '')}</textarea>`)}
       </div>
@@ -2285,6 +2286,7 @@ window.confirmarSalvarImovel = () => {
     inquilino_whatsapp: document.getElementById('im-whats').value.trim(),
     inquilino_email: document.getElementById('im-email').value.trim(),
     cep: document.getElementById('im-cep').value.trim(),
+    bairro: document.getElementById('im-bairro').value.trim(),
     cidade: document.getElementById('im-cidade').value.trim(),
     uf: document.getElementById('im-uf').value.trim(),
   };
@@ -2294,6 +2296,7 @@ window.confirmarSalvarImovel = () => {
     if (!im.inquilino) faltam.push('nome do inquilino');
     if (![11, 14].includes(im.inquilino_doc.replace(/\D/g, '').length)) faltam.push('CPF/CNPJ');
     if (im.cep.replace(/\D/g, '').length !== 8) faltam.push('CEP');
+    if (!im.bairro) faltam.push('bairro');
     if (!im.cidade || im.uf.length !== 2) faltam.push('cidade/UF');
     if (faltam.length && !confirm('Para a cobrança automática ainda falta: ' + faltam.join(', ') + '.\n\nSalvar assim mesmo? (o robô pula esse imóvel até completar)')) return;
   }

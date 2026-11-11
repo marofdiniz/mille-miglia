@@ -23,20 +23,18 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           EMPRESAS: "Explorer=c6,Mille Miglia=c6"
           C6_AMBIENTE: sandbox   # trocar para producao depois da homologação no C6
-          C6_CLIENT_ID: ${{ secrets.C6_CLIENT_ID }}
-          C6_CLIENT_SECRET: ${{ secrets.C6_CLIENT_SECRET }}
-          C6_CERT: ${{ secrets.C6_CERT }}
-          C6_KEY: ${{ secrets.C6_KEY }}
           C6_EXPLORER_CLIENT_ID: ${{ secrets.C6_EXPLORER_CLIENT_ID }}
           C6_EXPLORER_CLIENT_SECRET: ${{ secrets.C6_EXPLORER_CLIENT_SECRET }}
           C6_EXPLORER_CERT: ${{ secrets.C6_EXPLORER_CERT }}
           C6_EXPLORER_KEY: ${{ secrets.C6_EXPLORER_KEY }}
+          C6_EXPLORER_PIX_CHAVE: ${{ secrets.C6_EXPLORER_PIX_CHAVE }}
           C6_MILLE_MIGLIA_CLIENT_ID: ${{ secrets.C6_MILLE_MIGLIA_CLIENT_ID }}
           C6_MILLE_MIGLIA_CLIENT_SECRET: ${{ secrets.C6_MILLE_MIGLIA_CLIENT_SECRET }}
           C6_MILLE_MIGLIA_CERT: ${{ secrets.C6_MILLE_MIGLIA_CERT }}
           C6_MILLE_MIGLIA_KEY: ${{ secrets.C6_MILLE_MIGLIA_KEY }}
+          C6_MILLE_MIGLIA_PIX_CHAVE: ${{ secrets.C6_MILLE_MIGLIA_PIX_CHAVE }}
           DIAS_ANTES: "10"
           MULTA_PERCENTUAL: "2"
           JUROS_MES_PERCENTUAL: "1"
-          # Sempre simulação até a integração com o C6 ficar pronta.
+          # Simulação até a homologação no C6 (testar boleto com o workflow "Testar conexão com o C6").
           DRY_RUN: "1"

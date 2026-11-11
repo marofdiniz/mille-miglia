@@ -14,8 +14,9 @@
 // Variáveis de ambiente:
 //   FIREBASE_SERVICE_ACCOUNT  JSON da conta de serviço do Firebase
 //   EMPRESAS                  quais empresas cobrar e por qual banco, ex.: "Explorer=c6,Mille Miglia=c6"
-//   C6_EXPLORER_CLIENT_ID, C6_EXPLORER_CLIENT_SECRET, C6_EXPLORER_CERT, C6_EXPLORER_KEY
-//                             credenciais da API do C6 da Explorer
+//   C6_<EMPRESA>_CLIENT_ID/_CLIENT_SECRET/_CERT/_KEY/_PIX_CHAVE
+//                             credenciais da API do C6 de cada empresa (ver bancos/c6.js)
+//   C6_AMBIENTE               sandbox (padrão) ou producao
 //   DIAS_ANTES                (opcional) quantos dias antes do vencimento gerar (padrão 10)
 //   MULTA_PERCENTUAL          (opcional) multa por atraso em %, ex.: 2
 //   JUROS_MES_PERCENTUAL      (opcional) juros ao mês em %, ex.: 1
@@ -48,6 +49,7 @@ function faltando(im) {
   if (![11, 14].includes(digits(im.inquilino_doc).length)) f.push("CPF/CNPJ");
   if (!(Number(im.aluguel) > 0)) f.push("valor do aluguel");
   if (digits(im.cep).length !== 8) f.push("CEP");
+  if (!im.bairro) f.push("bairro");
   if (!im.cidade || String(im.uf || "").length !== 2) f.push("cidade/UF");
   if (!im.endereco) f.push("endereço");
   return f;
@@ -95,7 +97,7 @@ function planejar({ imoveis, cobrancas, receitas, hoje, diasAntes = 10, empresas
         vencimento: venc, valor: round2(im.aluguel),
         pagador: {
           nome: im.inquilino, documento: digits(im.inquilino_doc),
-          endereco: im.endereco, cep: digits(im.cep), cidade: im.cidade, uf: String(im.uf).toUpperCase(),
+          endereco: im.endereco, bairro: im.bairro, cep: digits(im.cep), cidade: im.cidade, uf: String(im.uf).toUpperCase(),
           email: im.inquilino_email || "", whatsapp: digits(im.inquilino_whatsapp),
         },
         // identificador nosso no banco (até 15 caracteres): AAMM + 8 primeiros do id do imóvel
@@ -164,19 +166,25 @@ async function main() {
   // 2 e 3. planejar cancelamentos e novas
   const plano = planejar({ imoveis, cobrancas, receitas, hoje, diasAntes: parseInt(process.env.DIAS_ANTES || "10") || 10, empresas });
   for (const p of plano.pulados) console.log(`  – pulei ${p.imovel}: ${p.motivo}`);
+  const adiadas = new Set(); // cancelamento que o banco ainda não aceitou: não gerar outro no lugar
   for (const c of plano.cancelar) {
     console.log(`  ✗ cancelar ${c.descricao}: ${c.motivo}`);
     if (!dry) {
-      if (c.bancoId) await bancoDe(c.empresa, c.banco).cancelar(c, c.motivo);
+      if (c.bancoId) {
+        const r = await bancoDe(c.empresa, c.banco).cancelar(c, c.motivo);
+        if (r && r.cancelado === false) { console.log(`    (o banco ainda não deixou cancelar: ${r.motivo}; tento na próxima rodada)`); adiadas.add(c.id); continue; }
+      }
       await db.collection("cobrancas").doc(c.id).update({ status: "cancelado", motivo: c.motivo });
     }
   }
   for (const n of plano.criar) {
+    if (adiadas.has(n.id)) { console.log(`  … ${n.descricao}: espero o boleto antigo ser cancelado para gerar o novo`); continue; }
     console.log(`  + gerar ${n.descricao} · vence ${n.vencimento} · R$ ${n.valor.toFixed(2)} · ${n.empresa}/${n.banco}`);
     if (dry) continue;
     const r = await bancoDe(n.empresa, n.banco).emitir(n);
     await db.collection("cobrancas").doc(n.id).set({
       ...n, status: "aberto", bancoId: r.id, linhaDigitavel: r.linhaDigitavel || "", pixCopiaECola: r.pixCopiaECola || "",
+      codigoBarras: r.codigoBarras || "", nossoNumero: r.nossoNumero || "",
       pdf: r.pdf || "", criadoEm: admin.firestore.FieldValue.serverTimestamp(),
     });
   }

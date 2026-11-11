@@ -7,6 +7,10 @@ on:
         type: choice
         options: [sandbox, producao]
         default: sandbox
+      boleto_teste:
+        description: "Emitir, consultar e cancelar um boleto de R$ 10 (só no sandbox)"
+        type: boolean
+        default: false
 jobs:
   testar:
     runs-on: ubuntu-latest
@@ -18,15 +22,14 @@ jobs:
         env:
           EMPRESAS: "Explorer,Mille Miglia"
           C6_AMBIENTE: ${{ inputs.ambiente }}
-          C6_CLIENT_ID: ${{ secrets.C6_CLIENT_ID }}
-          C6_CLIENT_SECRET: ${{ secrets.C6_CLIENT_SECRET }}
-          C6_CERT: ${{ secrets.C6_CERT }}
-          C6_KEY: ${{ secrets.C6_KEY }}
+          BOLETO_TESTE: ${{ inputs.boleto_teste && '1' || '0' }}
           C6_EXPLORER_CLIENT_ID: ${{ secrets.C6_EXPLORER_CLIENT_ID }}
           C6_EXPLORER_CLIENT_SECRET: ${{ secrets.C6_EXPLORER_CLIENT_SECRET }}
           C6_EXPLORER_CERT: ${{ secrets.C6_EXPLORER_CERT }}
           C6_EXPLORER_KEY: ${{ secrets.C6_EXPLORER_KEY }}
+          C6_EXPLORER_PIX_CHAVE: ${{ secrets.C6_EXPLORER_PIX_CHAVE }}
           C6_MILLE_MIGLIA_CLIENT_ID: ${{ secrets.C6_MILLE_MIGLIA_CLIENT_ID }}
           C6_MILLE_MIGLIA_CLIENT_SECRET: ${{ secrets.C6_MILLE_MIGLIA_CLIENT_SECRET }}
           C6_MILLE_MIGLIA_CERT: ${{ secrets.C6_MILLE_MIGLIA_CERT }}
           C6_MILLE_MIGLIA_KEY: ${{ secrets.C6_MILLE_MIGLIA_KEY }}
+          C6_MILLE_MIGLIA_PIX_CHAVE: ${{ secrets.C6_MILLE_MIGLIA_PIX_CHAVE }}

@@ -3,7 +3,7 @@ const assert = require("node:assert");
 const { planejar, receitaDoPagamento, vencimentoDe } = require("../cobranca.js");
 
 const ok = { cobranca_auto: true, empresa: "Explorer", inquilino: "Fulano", inquilino_doc: "123.456.789-09", aluguel: 4000,
-  cep: "01310-100", cidade: "São Paulo", uf: "sp", endereco: "Av. Paulista, 1", dia_vencimento: 10, status: "ativo" };
+  cep: "01310-100", bairro: "Bela Vista", cidade: "São Paulo", uf: "sp", endereco: "Av. Paulista, 1", dia_vencimento: 10, status: "ativo" };
 const imoveis = [
   { id: "p1", nome: "Paulista", ...ok },
   { id: "l1", nome: "Lorena", ...ok, dia_vencimento: 28, inquilino_doc: "" },
