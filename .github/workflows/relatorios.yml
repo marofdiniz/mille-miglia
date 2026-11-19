@@ -1,0 +1,41 @@
+name: Relatórios por e-mail
+on:
+  schedule:
+    - cron: "0 11 15 * *"   # dia 15, 8h (Brasília): relatório mensal
+    - cron: "0 11 * * *"    # todo dia, 8h (Brasília): lembrete de vencimentos
+  workflow_dispatch:
+    inputs:
+      tipo:
+        description: "Qual e-mail"
+        type: choice
+        options: [mensal, lembrete]
+        default: mensal
+      mes:
+        description: "Mês do relatório mensal (1-12, vazio = mês anterior)"
+        required: false
+      ano:
+        description: "Ano do relatório mensal (vazio = do mês anterior)"
+        required: false
+      dry_run:
+        description: "Só simular (mostra no log, não envia)"
+        type: boolean
+        default: false
+concurrency: relatorios-${{ github.event.schedule || inputs.tipo }}
+jobs:
+  enviar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --omit=dev
+      - run: node relatorios.js
+        env:
+          TIPO: ${{ github.event_name == 'workflow_dispatch' && inputs.tipo || (github.event.schedule == '0 11 15 * *' && 'mensal' || 'lembrete') }}
+          MES: ${{ inputs.mes }}
+          ANO: ${{ inputs.ano }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '0' }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RELATORIO_PARA: ${{ secrets.RELATORIO_PARA }}
+          RELATORIO_DE: ${{ secrets.RELATORIO_DE }}
