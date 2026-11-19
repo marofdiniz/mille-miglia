@@ -61,6 +61,19 @@ serviço do Firebase (Configurações do projeto › Contas de serviço › Gera
 
 Para testar sem criar nada: Actions › Robô do mês › Run workflow, com "Só simular" marcado.
 
+## Relatórios por e-mail (`relatorios.js`)
+
+GitHub Actions › "Relatórios por e-mail". Usa a conta de serviço do Firebase (como o Robô do mês),
+então funciona com o banco fechado por login. Substitui as funções do site Netlify `millemigliarelatorios`.
+
+- **Dia 15, 8h**: relatório mensal do mês anterior (receitas, despesas e resultado por imóvel,
+  contas a pagar em aberto, aluguéis em atraso).
+- **Todo dia, 8h**: lembrete de contas que vencem nos próximos 3 dias ou já venceram (só envia se houver).
+
+Segredos (Settings › Secrets and variables › Actions): `RESEND_API_KEY`, `RELATORIO_PARA`
+(e-mails separados por vírgula) e, opcional, `RELATORIO_DE` (remetente de um domínio verificado no Resend).
+Para reenviar um mês: Run workflow, tipo "mensal", mês e ano.
+
 ## Testes
 
 `npm test`
